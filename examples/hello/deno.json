@@ -1,6 +1,7 @@
 {
   "tasks": {
-    "serve": "deno run -A serve.js"
+    "serve": "deno run -A --watch=pages/ serve.js",
+    "dev": "deno run -A dev.js"
   },
   "importMap": "./import_map.json"
 }
