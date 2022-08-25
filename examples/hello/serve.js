@@ -1,6 +1,5 @@
-#!/usr/bin/env -S deno run -A --watch=static/,routes/
+#!/usr/bin/env -S deno run -A --watch=pages/
 
-import { serve } from '$pangea/serve.js'
-import manifest from './pangea.gen.ts'
+import { runServe } from '$pangea/runServe.js'
 
-await serve(manifest)
+runServe(import.meta.url)

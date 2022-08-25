@@ -1,4 +1,4 @@
-async function dev(metaUrl) {
+function generateManifest () {
   const paths = []
 
   const generateManifest = subPath => {
@@ -27,8 +27,6 @@ async function dev(metaUrl) {
       export { manifest as default }
     `
   )
-
-  await import(metaUrl.split('/').slice(0, -1).join('/') + '/serve.js')
 }
 
-export { dev }
+export { generateManifest }

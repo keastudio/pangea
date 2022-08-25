@@ -25,22 +25,24 @@ export async function build (manifest) {
   }
 
   // Copy files in static to dist if they exist
-  for await (const { name, path, isDirectory } of walk('./src/static')) {
-    const destinationPath = path.replace('src/static', './dist/')
+  if (existsSync('./src/static')) {
+    for await (const { name, path, isDirectory } of walk('./src/static')) {
+      const destinationPath = path.replace('src/static', './dist/')
 
-    if (path === 'src/static') {
-      // pass
-    } else if (isDirectory) {
-      await Deno.mkdir(destinationPath)
-    } else if (/\.css$/.test(name)) {
-      const css = await Deno.readTextFile(path)
+      if (path === 'src/static') {
+        // pass
+      } else if (isDirectory) {
+        await Deno.mkdir(destinationPath)
+      } else if (/\.css$/.test(name)) {
+        const css = await Deno.readTextFile(path)
 
-      const minifiedCss = await transform(css, { loader: 'css', minify: true })
-        .then(({ code }) => code)
+        const minifiedCss = await transform(css, { loader: 'css', minify: true })
+          .then(({ code }) => code)
 
-      Deno.writeTextFile(destinationPath, minifiedCss)
-    } else {
-      Deno.copyFile(path, destinationPath)
+        Deno.writeTextFile(destinationPath, minifiedCss)
+      } else {
+        Deno.copyFile(path, destinationPath)
+      }
     }
   }
 
@@ -50,7 +52,7 @@ export async function build (manifest) {
         const dynamicParameterRegex = /:([a-z]+)/g
 
         if (dynamicParameterRegex.test(name)) {
-          const { getStaticPaths } = manifest.pages['./src/pages/' + [...subPath, name].join('/')]
+          const { default: Page, getStaticProps, getStaticPaths } = manifest.pages['./src/pages/' + [...subPath, name].join('/')]
 
           const paths = (await getStaticPaths())?.paths
           if (name !== 'index' && paths) {
@@ -65,6 +67,8 @@ export async function build (manifest) {
               )
 
               const { pageBody, styleSheetHash, styleSheetBody } = await handlePage({
+                Page,
+                getStaticProps,
                 path: [...subPath, name].join('/'),
                 params
               })
@@ -83,7 +87,9 @@ export async function build (manifest) {
             }
           }
         } else {
-          const { styleSheetHash, styleSheetBody, pageBody } = await handlePage({ path: [...subPath, name].join('/') })
+          const { default: Page, getStaticProps } = manifest.pages['./src/pages/' + [...subPath, name].join('/')]
+
+          const { styleSheetHash, styleSheetBody, pageBody } = await handlePage({ Page, getStaticProps, path: [...subPath, name].join('/') })
 
           if (styleSheetHash) {
             Deno.writeTextFileSync(
