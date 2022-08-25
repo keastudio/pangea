@@ -81,15 +81,10 @@ const generateSharedDependenciesFile = async () => {
   return sharedOutputFiles[0].text
 }
 
-const handlePage = async ({ path, params, servestApp }) => {
+const handlePage = async ({ Page, getStaticProps, path, params, servestApp }) => {
   sessionStorage.removeItem('styleSheet')
   sessionStorage.removeItem('headNodes')
   sessionStorage.removeItem('hydrationScripts')
-
-  const { default: Page, getStaticProps } = await import(
-    // The unique query string ensures the ES module is not cached
-    Deno.cwd() + '/src/pages/' + path + '?unique=' + crypto.randomUUID()
-  )
 
   const pageProps = getStaticProps !== undefined
     ? await getStaticProps({ params }).then(resolved => resolved.props)

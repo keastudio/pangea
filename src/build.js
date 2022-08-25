@@ -3,7 +3,7 @@ import { emptyDirSync, walk, existsSync } from 'https://deno.land/std@0.152.0/fs
 
 import { generateIslandFile, generateSharedDependenciesFile, handlePage } from './utils.jsx'
 
-export async function build () {
+export async function build (manifest) {
   // Clear out the dist directory before building
   emptyDirSync('./dist')
 
@@ -50,10 +50,7 @@ export async function build () {
         const dynamicParameterRegex = /:([a-z]+)/g
 
         if (dynamicParameterRegex.test(name)) {
-          const { getStaticPaths } = await import(
-            // The unique query string ensures the ES module is not cached
-            Deno.cwd() + '/src/pages/' + [...subPath, name].join('/') + '?unique=' + crypto.randomUUID()
-          )
+          const { getStaticPaths } = manifest.pages['./src/pages/' + [...subPath, name].join('/')]
 
           const paths = (await getStaticPaths())?.paths
           if (name !== 'index' && paths) {

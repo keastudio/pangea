@@ -6,7 +6,7 @@ import { generateIslandFile, generateSharedDependenciesFile, handlePage } from '
 
 import { lookup } from 'https://deno.land/x/mrmime@v1.0.0/mod.ts'
 
-export async function serve () {
+export async function serve (manifest) {
   const responseMap = []
 
   if (existsSync('./src/islands')) {
@@ -88,11 +88,8 @@ export async function serve () {
         const dynamicParameterRegex = /:([a-z]+)/g
   
         if (dynamicParameterRegex.test(name)) {
-          const { getStaticPaths } = await import(
-            // The unique query string ensures the ES module is not cached
-            Deno.cwd() + '/src/pages/' + [...subPath, name].join('/') + '?unique=' + crypto.randomUUID()
-          )
-  
+          const { default: Page, getStaticProps, getStaticPaths } = manifest.pages['./src/pages/' + [...subPath, name].join('/')]
+
           const paths = (await getStaticPaths())?.paths
           if (name !== 'index' && paths) {
             for (const { params } of paths) {
@@ -109,6 +106,8 @@ export async function serve () {
                 substitutedPath,
                 async () => {
                   const { pageBody, styleSheetHash, styleSheetBody } = await handlePage({
+                    Page,
+                    getStaticProps,
                     path: [...subPath, name].join('/'),
                     params,
                     servestApp: (route, responseHandler) => {
@@ -140,10 +139,14 @@ export async function serve () {
         } else {
           const path = '/' + [...subPath, ...name.split('.')[0] === 'index' ? [] : [name.split('.')[0]]].join('/')
   
+          const { default: Page, getStaticProps } = manifest.pages['./src/pages/' + [...subPath, name].join('/')]
+
           responseMap.push([
             path,
             async () => {
               const { pageBody, styleSheetHash, styleSheetBody } = await handlePage({
+                Page,
+                getStaticProps,
                 path: [...subPath, name].join('/'),
                 servestApp: (route, responseHandler) => {
                   responseMap.push([route, responseHandler])
