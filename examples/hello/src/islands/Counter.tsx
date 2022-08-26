@@ -1,7 +1,7 @@
 import React from 'react'
 import { css, combine } from '$pangea/src/css.js'
 
-const Counter = ({ initialCount }) => {
+const Counter = ({ initialCount }: { initialCount: number }) => {
   const [count, setCount] = React.useState(initialCount)
 
   return (
