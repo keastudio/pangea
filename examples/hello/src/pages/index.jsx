@@ -16,7 +16,7 @@ const Page = ({ title, servestApp }) => {
   )
 }
 
-const getStaticProps = async () => {
+const getStaticProps = () => {
   return {
     props: {
       title: 'Hello World!'

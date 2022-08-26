@@ -11,11 +11,6 @@ import { existsSync } from 'https://deno.land/std@0.152.0/fs/mod.ts'
 import postcss from 'https://deno.land/x/postcss@8.4.16/mod.js'
 import nested from 'https://esm.sh/postcss-nested@5.0.6?pin=v92&bundle'
 
-// Note, this assumes Deno is run with the following flag:
-// --import-map ./import_map.json
-// ...I could not find away to dynamically get the path of the import map within the code
-const importMapJson = JSON.parse(Deno.readTextFileSync(`${Deno.cwd()}/import_map.json`))
-
 const generateStyleSheetHash = text => createHash('md5').update(text).toString().substring(0, 6)
 
 const generateIslandFile = async path => {
@@ -45,8 +40,8 @@ const generateSharedDependenciesFile = async () => {
   await Deno.writeTextFile(
     sharedTemporaryFile,
     `
-      import React from '${importMapJson.imports.react}'
-      import ReactDOMClient from '${importMapJson.imports['react-dom/client']}'
+      import React from 'react'
+      import ReactDOMClient from 'react-dom/client'
 
       ${existsSync('./src/store.js')
         ? `
@@ -81,9 +76,9 @@ const handlePage = async ({ Page, getStaticProps, path, params, servestApp }) =>
   sessionStorage.removeItem('headNodes')
   sessionStorage.removeItem('hydrationScripts')
 
-  const pageProps = getStaticProps !== undefined
-    ? await getStaticProps({ params }).then(resolved => resolved.props)
-    : {}
+  const { props: pageProps } = getStaticProps !== undefined
+    ? await getStaticProps({ params })
+    : { props: {} }
 
   const pageMarkup = ReactDOMServer.renderToStaticMarkup(
     <Page {...pageProps} servestApp={servestApp} />
