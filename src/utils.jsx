@@ -30,7 +30,7 @@ const generateIslandFile = async path => {
           react: 'React'
         }
       ),
-      denoPlugin()
+      denoPlugin({ importMapURL: new URL(`file://${Deno.cwd()}/import_map.json`) })
     ],
     write: false,
     minify: true
@@ -65,7 +65,7 @@ const generateSharedDependenciesFile = async () => {
     entryPoints: [sharedTemporaryFile],
     format: 'esm',
     plugins: [
-      denoPlugin()
+      denoPlugin({ importMapURL: new URL(`file://${Deno.cwd()}/import_map.json`) })
     ],
     write: false,
     minify: true
