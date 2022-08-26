@@ -12,6 +12,8 @@ Features:
 
 ### Getting started
 
-`
-  deno run -A -r https://deno.land/x/pangea/init.ts project-name
-`
+```sh
+deno run -A -r https://deno.land/x/pangea/init.ts project-name 
+cd project-name
+deno task serve
+```
