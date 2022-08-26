@@ -2,7 +2,7 @@
 
 import * as Colors from 'https://deno.land/std@0.152.0/fmt/colors.ts'
 import { ensureDir } from 'https://deno.land/std@0.152.0/fs/mod.ts'
-import { imageWidths } from '../components/ResponsivePicture.tsx'
+import { imageWidths, imageFormats } from '../components/ResponsivePicture.tsx'
 
 try {
   Deno.run({ cmd: ['convert', '-version'] })
@@ -35,26 +35,26 @@ const results = await Promise.all(
   Array.from(Deno.readDirSync('./src/static/images/original'))
     .filter(({ isFile }) => isFile === true)
     .map(
-      ({ name }) => ['avif', 'webp', 'jpg'].map(
-        format => imageWidths.map(
-          width => ({ name, width, format })
+      ({ name }) => imageFormats.map(
+        ({ extension }) => imageWidths.map(
+          width => ({ name, width, extension })
         ) 
       )
     )
     .flat(2)
-    .map(async ({ name, width, format }) => {
+    .map(async ({ name, width, extension }) => {
       const command = (name === 'avif' && libavifIsInstalled === true)
-        ? `avifenc ./src/static/images/original/${name} ./src/static/images/optimized/${name.split('.')[0]}_w${width}.${format}`
-        : `convert ./src/static/images/original/${name} -resize ${width} -quality 75 ./src/static/images/optimized/${name.split('.')[0]}_w${width}.${format}`
+        ? `avifenc ./src/static/images/original/${name} ./src/static/images/optimized/${name.split('.')[0]}_w${width}.${extension}`
+        : `convert ./src/static/images/original/${name} -resize ${width} -quality 75 ./src/static/images/optimized/${name.split('.')[0]}_w${width}.${extension}`
       const process = Deno.run({ cmd: command.split(' ') })
-      return await Promise.all([process.status(), { name, width, format }])
+      return await Promise.all([process.status(), { name, width, extension }])
     })
 )
 
 results.forEach(
-  ([status, { name, width, format }]) => {
+  ([status, { name, width, extension }]) => {
     if (status.success) {
-      console.log(Colors.green('Converted: ') + `/src/static/images/original/${name} -> ./src/static/images/optimized/${name.split('.')[0]}_w${width}.${format}`)
+      console.log(Colors.green('Converted: ') + `/src/static/images/original/${name} -> ./src/static/images/optimized/${name.split('.')[0]}_w${width}.${extension}`)
     }
   }
 )

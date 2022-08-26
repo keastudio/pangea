@@ -1,7 +1,5 @@
 import React from 'react'
 
-export const imageWidths = [480, 512, 768, 1080, 1440]
-
 type ResponsivePictureProps = {
   className: string | undefined,
   src: string
@@ -23,7 +21,9 @@ type imageFormat = {
 
 const srcFormatter = ({ width, extension, src }: srcFormatterArgs) => `${width},${extension}`.replace(/([\w\/]+),(\w+)/, src)
 
-const imageFormats: imageFormat[] = [
+export const imageWidths: number[] = [480, 512, 768, 1080, 1440]
+
+export const imageFormats: imageFormat[] = [
   { mimeType: 'image/avif', extension: 'avif' },
   { mimeType: 'image/webp', extension: 'webp' },
   { mimeType: 'image/jpeg', extension: 'jpg' }
