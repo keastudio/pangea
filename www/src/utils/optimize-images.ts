@@ -3,6 +3,9 @@
 import * as Colors from 'https://deno.land/std@0.152.0/fmt/colors.ts'
 import { ensureDir } from 'https://deno.land/std@0.152.0/fs/mod.ts'
 import { imageWidths, imageFormats } from '../components/ResponsivePicture.tsx'
+import type { imageFormat, extension } from '../components/ResponsivePicture.tsx'
+
+type imageInfoArgs = { name: string, width: number, extension: extension }
 
 try {
   Deno.run({ cmd: ['convert', '-version'] })
@@ -36,13 +39,13 @@ const results = await Promise.all(
     .filter(({ isFile }) => isFile === true)
     .map(
       ({ name }) => imageFormats.map(
-        ({ extension }) => imageWidths.map(
-          width => ({ name, width, extension })
+        ({ extension }: imageFormat) => imageWidths.map(
+          (width: number): imageInfoArgs => ({ name, width, extension })
         ) 
       )
     )
     .flat(2)
-    .map(async ({ name, width, extension }) => {
+    .map(async ({ name, width, extension }: imageInfoArgs) => {
       const command = (name === 'avif' && libavifIsInstalled === true)
         ? `avifenc ./src/static/images/original/${name} ./src/static/images/optimized/${name.split('.')[0]}_w${width}.${extension}`
         : `convert ./src/static/images/original/${name} -resize ${width} -quality 75 ./src/static/images/optimized/${name.split('.')[0]}_w${width}.${extension}`
@@ -52,7 +55,7 @@ const results = await Promise.all(
 )
 
 results.forEach(
-  ([status, { name, width, extension }]) => {
+  ([status, { name, width, extension }]: [Deno.ProcessStatus, imageInfoArgs]) => {
     if (status.success) {
       console.log(Colors.green('Converted: ') + `/src/static/images/original/${name} -> ./src/static/images/optimized/${name.split('.')[0]}_w${width}.${extension}`)
     }

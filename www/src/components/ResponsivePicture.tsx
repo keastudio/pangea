@@ -6,7 +6,7 @@ type ResponsivePictureProps = {
 }
 
 type mimeType = 'image/avif' | 'image/webp' | 'image/jpeg'
-type extension = 'avif' | 'webp' | 'jpg'
+export type extension = 'avif' | 'webp' | 'jpg'
 
 type srcFormatterArgs = {
   width: number,
@@ -14,14 +14,14 @@ type srcFormatterArgs = {
   src: string
 }
 
-type imageFormat = {
+export type imageFormat = {
   mimeType: mimeType,
   extension: extension
 }
 
 const srcFormatter = ({ width, extension, src }: srcFormatterArgs) => `${width},${extension}`.replace(/([\w\/]+),(\w+)/, src)
 
-export const imageWidths: number[] = [480, 512, 768, 1080, 1440]
+export const imageWidths = [480, 512, 768, 1080, 1440]
 
 export const imageFormats: imageFormat[] = [
   { mimeType: 'image/avif', extension: 'avif' },
@@ -40,7 +40,7 @@ const ResponsivePicture = ({ className, src }: ResponsivePictureProps) => (
             key={mimeType}
             type={mimeType}
             srcSet={imageWidths
-              .map(width => `${srcFormatter({ width, extension, src })} ${width}w`)
+              .map((width: number) => `${srcFormatter({ width, extension, src })} ${width}w`)
               .join(', ')}
             sizes='100vw'
           />
