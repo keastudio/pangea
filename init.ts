@@ -45,19 +45,19 @@ await Deno.writeTextFile(
   join(resolvedDirectory, 'build.ts'),
   `#!/usr/bin/env -S deno run -A
 
-import { runBuild } from '$pangea/runBuild.js'
+import { runBuild } from '$pangea/runBuild.ts'
 
 runBuild(import.meta.url)
 `
 )
 
 await Deno.writeTextFile(
-  join(resolvedDirectory, 'serve.ts'),
+  join(resolvedDirectory, 'start.ts'),
   `#!/usr/bin/env -S deno run -A --watch=pages/
 
-import { runServe } from '$pangea/runServe.js'
+import { runStart } from '$pangea/runStart.ts'
     
-runServe(import.meta.url)
+runStart(import.meta.url)
 `
 )
 
@@ -92,7 +92,7 @@ if (useVSCode) {
 await Deno.writeTextFile(
   join(resolvedDirectory, 'src', 'islands', 'Counter.tsx'),
   `import React from 'react'
-import { css, combine } from '$pangea/src/css.js'
+import { css, combine } from '$pangea/src/css.ts'
 
 const Counter = ({ initialCount }: { initialCount: number }) => {
   const [count, setCount] = React.useState(initialCount)
@@ -131,7 +131,7 @@ export { Counter as default }
 await Deno.writeTextFile(
   join(resolvedDirectory, 'src', 'pages', 'index.tsx'),
   `import React from 'react'
-import { Island } from '$pangea/src/Island.jsx'
+import { Island } from '$pangea/src/Island.ts'
 import Counter from '../islands/Counter.tsx'
 
 const Page = ({ title, servestApp }: { title: string, servestApp: any }) => {
@@ -165,7 +165,7 @@ await Deno.writeTextFile(
   JSON.stringify(
     {
       'tasks': {
-        'serve': 'deno run -A --watch=pages/ serve.ts',
+        'start': 'deno run -A --watch=pages/ start.ts',
         'build': 'deno run -A build.ts'
       },
       'importMap': './import_map.json'

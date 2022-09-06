@@ -21,9 +21,7 @@ function hash (str) {
   return ((h ^ h >>> 15) >>> 0).toString(36)
 }
 
-function css () {
-  const [templateStringArray, ...templateArgs] = arguments
-
+function css (templateStringArray: TemplateStringsArray, ...templateArgs: (string|number)[]) {
   const cssRules = templateStringArray
     .reduce(
       (acc, current, index) => index + 1 <= templateArgs.length
@@ -37,7 +35,7 @@ function css () {
 
   const styleSheetBody = `.${cssClassName} {\n${cssRules}\n}\n`
 
-  if (typeof document === 'undefined') {
+  if ('Deno' in window) {
     sessionStorage.setItem(
       'styleSheet',
       (sessionStorage.getItem('styleSheet') || '') + styleSheetBody

@@ -1,8 +1,8 @@
 import React from 'react'
-import { css } from '$pangea/src/css.js'
-import { Head } from '$pangea/src/Head.js'
+import { css } from '$pangea/src/css.ts'
+import { Head } from '$pangea/src/Head.ts'
 
-import { Island } from '$pangea/src/Island.jsx'
+import { Island } from '$pangea/src/Island.ts'
 import Counter from '../islands/Counter.tsx'
 
 import ResponsivePicture from '../components/ResponsivePicture.tsx'
@@ -196,7 +196,7 @@ const Page = ({ title, description, servestApp }: { title: string, description: 
             color: #28534d;
           `}
         >
-          deno run -A -r https://deno.land/x/pangea/init.ts project-name
+          deno run -A -r https://deno.land/x/pangea/init.ts my-project-name
         </code>
 
         <p
@@ -221,7 +221,7 @@ const Page = ({ title, description, servestApp }: { title: string, description: 
             color: #28534d;
           `}
         >
-          cd project-name
+          cd my-project-name
         </code>
         
         <p
@@ -246,7 +246,7 @@ const Page = ({ title, description, servestApp }: { title: string, description: 
             color: #28534d;
           `}
         >
-          deno task serve
+          deno task start
         </code>
 
         <p

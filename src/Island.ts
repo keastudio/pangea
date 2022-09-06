@@ -54,19 +54,20 @@ function Island ({ path, app, data, servestApp }) {
     existingHydrationScripts + '<script type="module" src="/' + hydrateIslandFilename + '"></script>'
   )
 
-  return (
-    <div
+  return React.createElement(
+    'div',
+    {
       // TODO: Need to use a ref instead of the filename, as the same island could be used twice on a page
-      id={islandFilename.split('.')[0]}
-      dangerouslySetInnerHTML={{
+      id: islandFilename.split('.')[0],
+      dangerouslySetInnerHTML: {
         __html: ReactDOMServer.renderToString(
           React.createElement(
             app,
             data
           )
         )
-      }}
-    />
+      }
+    }
   )
 }
 

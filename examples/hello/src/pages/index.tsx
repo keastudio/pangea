@@ -1,5 +1,5 @@
 import React from 'react'
-import { Island } from '$pangea/src/Island.jsx'
+import { Island } from '$pangea/src/Island.ts'
 import Counter from '../islands/Counter.tsx'
 
 const Page = ({ title, servestApp }: { title: string, servestApp: any }) => {

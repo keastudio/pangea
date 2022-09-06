@@ -1,9 +1,9 @@
 import { stop, transform } from 'https://deno.land/x/esbuild@v0.14.54/mod.js'
 import { emptyDirSync, walk, existsSync } from 'https://deno.land/std@0.152.0/fs/mod.ts'
 
-import { generateIslandFile, generateSharedDependenciesFile, handlePage } from './utils.jsx'
+import { generateIslandFile, generateSharedDependenciesFile, handlePage } from './utils.ts'
 
-export async function build (manifest) {
+export async function build (manifest: string) {
   // Clear out the dist directory before building
   emptyDirSync('./dist')
 
@@ -46,7 +46,7 @@ export async function build (manifest) {
     }
   }
 
-  const outputPages = async subPath => {
+  const outputPages = async (subPath: string[]) => {
     for (const { name, isFile } of Deno.readDirSync(['./src/pages', ...subPath].join('/'))) {
       if (isFile) {
         const dynamicParameterRegex = /:([a-z]+)/g

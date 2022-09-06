@@ -2,7 +2,7 @@ import { serve as serveHttp } from 'https://deno.land/std@0.152.0/http/server.ts
 
 import { existsSync } from 'https://deno.land/std@0.152.0/fs/mod.ts'
 
-import { generateIslandFile, generateSharedDependenciesFile, handlePage } from './utils.jsx'
+import { generateIslandFile, generateSharedDependenciesFile, handlePage } from './utils.ts'
 
 import { lookup } from 'https://deno.land/x/mrmime@v1.0.0/mod.ts'
 
