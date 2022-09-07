@@ -9,6 +9,8 @@ import type { AcceptedPlugin } from 'https://deno.land/x/postcss@8.4.16/lib/post
 import nested from 'https://esm.sh/postcss-nested@5.0.6?pin=v92&bundle'
 
 import { existsSync } from 'https://deno.land/std@0.152.0/fs/mod.ts'
+import { join } from 'https://deno.land/std@0.150.0/path/mod.ts'
+
 
 const generateStyleSheetHash = async (text: string) => {
   const encoder = new TextEncoder()
@@ -46,7 +48,7 @@ const generateIslandFile = async (path: string) => {
   return `import{React}from'./shared.js';${outputFiles[0].text}`
 }
 
-const generateSharedDependenciesFile = async () => {
+const generateSharedDependenciesFile = async ({ projectDir }) => {
   const sharedTemporaryFile = Deno.makeTempFileSync({ suffix: '.js' })
 
   await Deno.writeTextFile(
@@ -55,7 +57,7 @@ const generateSharedDependenciesFile = async () => {
       import React from 'react'
       import ReactDOMClient from 'react-dom/client'
 
-      ${existsSync('./src/store.js')
+      ${existsSync(join(projectDir, 'store.js'))
         ? `
           import { globalStore } from '${Deno.cwd()}/src/store.js'
 
@@ -130,7 +132,7 @@ ${headNodes !== null
   ? headNodes
   : ''}
 
-${(existsSync('./src/islands') && sessionStorage.getItem('hydrationScripts') !== null)
+${sessionStorage.getItem('hydrationScripts') !== null
   ? sessionStorage.getItem('hydrationScripts')
   : ''}
 </head>

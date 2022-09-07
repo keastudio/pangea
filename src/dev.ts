@@ -3,27 +3,31 @@ import { serve as serveHttp } from 'https://deno.land/std@0.152.0/http/server.ts
 import { existsSync } from 'https://deno.land/std@0.152.0/fs/mod.ts'
 
 import { generateIslandFile, generateSharedDependenciesFile, handlePage } from './utils.ts'
-import { dirname, fromFileUrl, join } from 'https://deno.land/std@0.150.0/path/mod.ts'
+import { dirname, basename, fromFileUrl, join } from 'https://deno.land/std@0.150.0/path/mod.ts'
 
 import { lookup } from 'https://deno.land/x/mrmime@v1.0.0/mod.ts'
 import { generateManifest } from './generateManifest.ts'
 
 export async function dev (baseModuleUrl: string) {
   const baseDir = dirname(fromFileUrl(baseModuleUrl))
+  const projectDir = existsSync(join(baseDir, 'src'))
+    ? join(baseDir, 'src')
+    : baseDir
 
   await generateManifest()
 
   const { default: manifest } = await import(join(baseDir, 'pangea.gen.ts'))
 
+  const islandsDir = join(projectDir, 'islands')
   const responseMap = []
 
-  if (existsSync('./src/islands')) {
-    for (const { name, isFile } of Deno.readDirSync('./src/islands')) {
+  if (existsSync(islandsDir)) {
+    for (const { name, isFile } of Deno.readDirSync(islandsDir)) {
       if (isFile === true) {
-        const path = './src/islands/' + name
+        const path = join(islandsDir, name)
   
         responseMap.push([
-          '/' + path.split('/').slice(-1)[0].split('.')[0] + '.js',
+          '/' + basename(path).split('.')[0] + '.js',
           async () => {
             const responseBody = await generateIslandFile(path)
   
@@ -44,7 +48,7 @@ export async function dev (baseModuleUrl: string) {
     responseMap.push([
       '/shared.js',
       async () => {
-        const responseBody = await generateSharedDependenciesFile()
+        const responseBody = await generateSharedDependenciesFile({ projectDir })
   
         return new Response(
           responseBody,

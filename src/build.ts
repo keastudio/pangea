@@ -1,5 +1,5 @@
-import { stop, transform } from 'https://deno.land/x/esbuild@v0.14.54/mod.js'
-import { emptyDirSync, walk, existsSync } from 'https://deno.land/std@0.152.0/fs/mod.ts'
+import { stop, transform } from 'https://deno.land/x/esbuild@v0.14.51/mod.js'
+import { emptyDir, walk, existsSync } from 'https://deno.land/std@0.152.0/fs/mod.ts'
 import { dirname, fromFileUrl, join } from 'https://deno.land/std@0.150.0/path/mod.ts'
 
 import { generateIslandFile, generateSharedDependenciesFile, handlePage } from './utils.ts'
@@ -7,16 +7,21 @@ import { generateManifest } from './generateManifest.ts'
 
 export async function build (baseModuleUrl: string) {
   const baseDir = dirname(fromFileUrl(baseModuleUrl))
+  const projectDir = existsSync(join(baseDir, 'src'))
+    ? join(baseDir, 'src')
+    : baseDir
 
   await generateManifest()
 
   const { default: manifest } = await import(join(baseDir, '/pangea.gen.ts'))
 
   // Clear out the dist directory before building
-  emptyDirSync('./dist')
+  await emptyDir('./dist')
 
-  if (existsSync('./src/islands')) {
-    for await (const { name, isFile } of Deno.readDir('./src/islands')) {
+  const islandsDir = join(projectDir, 'islands')
+
+  if (existsSync(islandsDir)) {
+    for await (const { name, isFile } of Deno.readDir(islandsDir)) {
       const path = './src/islands/' + name
       if (isFile === true) {
         Deno.writeTextFile(
@@ -28,7 +33,7 @@ export async function build (baseModuleUrl: string) {
 
     Deno.writeTextFile(
       'dist/shared.js',
-      await generateSharedDependenciesFile()
+      await generateSharedDependenciesFile({ projectDir })
     )
   }
 
