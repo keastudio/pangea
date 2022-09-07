@@ -1,13 +1,12 @@
 import React from 'react'
-import { Island } from '$pangea/src/Island.jsx'
+import { Island } from '$pangea/src/island.ts'
 import Counter from '../islands/Counter.tsx'
 
-const Page = ({ title, servestApp }: { title: string, servestApp: any }) => {
+const Page = ({ title }: { title: string }) => {
   return (
     <>
       <h1>{title}</h1>
       <Island
-        servestApp={servestApp}
         path='src/islands/Counter.tsx'
         app={Counter}
         data={{ initialCount: 0 }}

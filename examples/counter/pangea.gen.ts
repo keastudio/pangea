@@ -1,9 +1,9 @@
 
-      import * as $0 from './src/pages/index.jsx'
+      import * as $0 from './pages/index.tsx'
 
       const manifest = {
         pages: {
-          './src/pages/index.jsx': $0
+          './pages/index.tsx': $0
         }
       }
 

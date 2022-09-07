@@ -1,5 +1,5 @@
 import React from 'react'
-import { css, combine } from '$pangea/src/css.js'
+import { css, combine } from '$pangea/src/css.ts'
 
 type ButtonProps = {
   onClick: React.MouseEventHandler<HTMLButtonElement>,

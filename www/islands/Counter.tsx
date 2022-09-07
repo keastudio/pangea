@@ -1,5 +1,5 @@
-import React from 'react'
-import { css, combine } from '$pangea/src/css.js'
+import React, { FunctionComponent } from 'react'
+import { css, combine } from '$pangea/src/css.ts'
 
 import Button from '../components/Button.tsx'
 

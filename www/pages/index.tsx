@@ -1,13 +1,13 @@
 import React from 'react'
-import { css } from '$pangea/src/css.js'
-import { Head } from '$pangea/src/Head.js'
+import { css } from '$pangea/src/css.ts'
+import { Head } from '$pangea/src/head.ts'
 
-import { Island } from '$pangea/src/Island.jsx'
+import { Island } from '$pangea/src/island.ts'
 import Counter from '../islands/Counter.tsx'
 
 import ResponsivePicture from '../components/ResponsivePicture.tsx'
 
-const Page = ({ title, description, servestApp }: { title: string, description: string, servestApp: any }) => {
+const Page = ({ title, description }: { title: string, description: string }) => {
   return (
     <>
       <Head>
@@ -196,7 +196,7 @@ const Page = ({ title, description, servestApp }: { title: string, description: 
             color: #28534d;
           `}
         >
-          deno run -A -r https://deno.land/x/pangea/init.ts project-name
+          deno run -A -r https://deno.land/x/pangea/init.ts my-project-name
         </code>
 
         <p
@@ -221,7 +221,7 @@ const Page = ({ title, description, servestApp }: { title: string, description: 
             color: #28534d;
           `}
         >
-          cd project-name
+          cd my-project-name
         </code>
         
         <p
@@ -246,7 +246,7 @@ const Page = ({ title, description, servestApp }: { title: string, description: 
             color: #28534d;
           `}
         >
-          deno task serve
+          deno task start
         </code>
 
         <p
@@ -294,7 +294,6 @@ const Page = ({ title, description, servestApp }: { title: string, description: 
           `}
         >
           <Island
-            servestApp={servestApp}
             path='src/islands/Counter.tsx'
             app={Counter}
             data={{ initialCount: 0 }}

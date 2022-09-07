@@ -18,9 +18,9 @@ try {
   }
 }
 
-await Deno.mkdir(join(resolvedDirectory, 'src', 'pages'), { recursive: true })
-await Deno.mkdir(join(resolvedDirectory, 'src', 'islands'), { recursive: true })
-await Deno.mkdir(join(resolvedDirectory, 'src', 'static'), { recursive: true })
+await Deno.mkdir(join(resolvedDirectory, 'pages'), { recursive: true })
+await Deno.mkdir(join(resolvedDirectory, 'islands'), { recursive: true })
+await Deno.mkdir(join(resolvedDirectory, 'static'), { recursive: true })
 
 const importMapJson = JSON.stringify(
   {
@@ -45,19 +45,19 @@ await Deno.writeTextFile(
   join(resolvedDirectory, 'build.ts'),
   `#!/usr/bin/env -S deno run -A
 
-import { runBuild } from '$pangea/runBuild.js'
+import { build } from '$pangea/build.ts'
 
-runBuild(import.meta.url)
+build(import.meta.url)
 `
 )
 
 await Deno.writeTextFile(
-  join(resolvedDirectory, 'serve.ts'),
+  join(resolvedDirectory, 'dev.ts'),
   `#!/usr/bin/env -S deno run -A --watch=pages/
 
-import { runServe } from '$pangea/runServe.js'
+import { dev } from '$pangea/deb.ts'
     
-runServe(import.meta.url)
+dev(import.meta.url)
 `
 )
 
@@ -90,9 +90,9 @@ if (useVSCode) {
 }
 
 await Deno.writeTextFile(
-  join(resolvedDirectory, 'src', 'islands', 'Counter.tsx'),
+  join(resolvedDirectory, 'islands', 'Counter.tsx'),
   `import React from 'react'
-import { css, combine } from '$pangea/src/css.js'
+import { css, combine } from '$pangea/css.ts'
 
 const Counter = ({ initialCount }: { initialCount: number }) => {
   const [count, setCount] = React.useState(initialCount)
@@ -129,18 +129,17 @@ export { Counter as default }
 )
 
 await Deno.writeTextFile(
-  join(resolvedDirectory, 'src', 'pages', 'index.tsx'),
+  join(resolvedDirectory, 'pages', 'index.tsx'),
   `import React from 'react'
-import { Island } from '$pangea/src/Island.jsx'
+import { Island } from '$pangea/island.ts'
 import Counter from '../islands/Counter.tsx'
 
-const Page = ({ title, servestApp }: { title: string, servestApp: any }) => {
+const Page = ({ title }: { title: string }) => {
   return (
     <>
       <h1>{title}</h1>
       <Island
-        servestApp={servestApp}
-        path='src/islands/Counter.tsx'
+        path='islands/Counter.tsx'
         app={Counter}
         data={{ initialCount: 0 }}
       />
@@ -165,7 +164,7 @@ await Deno.writeTextFile(
   JSON.stringify(
     {
       'tasks': {
-        'serve': 'deno run -A --watch=pages/ serve.ts',
+        'start': 'deno run -A --watch=pages/ dev.ts',
         'build': 'deno run -A build.ts'
       },
       'importMap': './import_map.json'

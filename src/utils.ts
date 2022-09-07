@@ -1,26 +1,39 @@
-import { build, transform } from 'https://deno.land/x/esbuild@v0.14.54/mod.js'
+import { build, transform, Plugin } from 'https://deno.land/x/esbuild@v0.14.51/mod.js'
 import { denoPlugin } from 'https://deno.land/x/esbuild_deno_loader@0.5.2/mod.ts'
 import globalExternals from 'https://esm.sh/@fal-works/esbuild-plugin-global-externals@2.1.2?pin=v92'
-import { createHash } from 'https://deno.land/std@0.152.0/hash/mod.ts'
 
-import React from 'react'
 import ReactDOMServer from 'react-dom/server'
 
-import { existsSync } from 'https://deno.land/std@0.152.0/fs/mod.ts'
-
 import postcss from 'https://deno.land/x/postcss@8.4.16/mod.js'
+import type { AcceptedPlugin } from 'https://deno.land/x/postcss@8.4.16/lib/postcss.d.ts'
 import nested from 'https://esm.sh/postcss-nested@5.0.6?pin=v92&bundle'
 
-const generateStyleSheetHash = text => createHash('md5').update(text).toString().substring(0, 6)
+import { existsSync } from 'https://deno.land/std@0.152.0/fs/mod.ts'
+import { join } from 'https://deno.land/std@0.150.0/path/mod.ts'
 
-const generateIslandFile = async path => {
+const generateStyleSheetHash = async (text: string) => {
+  const encoder = new TextEncoder()
+  const encodedText = encoder.encode(text)
+
+  return Array.from(
+    new Uint8Array(
+      await crypto.subtle.digest('SHA-1', encodedText)
+    )
+  )
+    .map(byte => byte.toString(16)
+    .padStart(2, '0'))
+    .join('')
+    .substring(0, 6)
+}
+
+const generateIslandFile = async (path: string) => {
   const { outputFiles } = await build({
     bundle: true,
     entryPoints: [path],
     format: 'esm',
     jsxFactory: 'React.createElement',
     plugins: [
-      globalExternals(
+      <Plugin>globalExternals(
         {
           react: 'React'
         }
@@ -34,7 +47,7 @@ const generateIslandFile = async path => {
   return `import{React}from'./shared.js';${outputFiles[0].text}`
 }
 
-const generateSharedDependenciesFile = async () => {
+const generateSharedDependenciesFile = async ({ projectDir }: { projectDir: string }) => {
   const sharedTemporaryFile = Deno.makeTempFileSync({ suffix: '.js' })
 
   await Deno.writeTextFile(
@@ -43,9 +56,9 @@ const generateSharedDependenciesFile = async () => {
       import React from 'react'
       import ReactDOMClient from 'react-dom/client'
 
-      ${existsSync('./src/store.js')
+      ${existsSync(join(projectDir, 'store.ts'))
         ? `
-          import { globalStore } from '${Deno.cwd()}/src/store.js'
+          import { globalStore } from '${Deno.cwd()}/src/store.ts'
 
           export { React, ReactDOMClient, globalStore }
         `
@@ -71,7 +84,14 @@ const generateSharedDependenciesFile = async () => {
   return sharedOutputFiles[0].text
 }
 
-const handlePage = async ({ Page, getStaticProps, path, params, servestApp }) => {
+type handlePageArgs = {
+  Page: (props: Record<string, unknown>) => JSX.Element,
+  getStaticProps: ({ params }: { params: Record<string, unknown> | undefined }) => ({ props: Record<string, unknown> }),
+  path: string,
+  params?: Record<string, unknown>
+}
+
+const handlePage = async ({ Page, getStaticProps, path, params }: handlePageArgs) => {
   sessionStorage.removeItem('styleSheet')
   sessionStorage.removeItem('headNodes')
   sessionStorage.removeItem('hydrationScripts')
@@ -81,7 +101,7 @@ const handlePage = async ({ Page, getStaticProps, path, params, servestApp }) =>
     : { props: {} }
 
   const pageMarkup = ReactDOMServer.renderToStaticMarkup(
-    <Page {...pageProps} servestApp={servestApp} />
+    Page({ ...pageProps })
   )
 
   const styleSheet = sessionStorage.getItem('styleSheet')
@@ -89,12 +109,12 @@ const handlePage = async ({ Page, getStaticProps, path, params, servestApp }) =>
   const headNodes = sessionStorage.getItem('headNodes')
 
   const styleSheetBody = styleSheet && await transform(
-    postcss([nested])
+    postcss([<AcceptedPlugin>nested])
       .process(styleSheet, { from: undefined })
       .css,
     { loader: 'css', minify: true })
     .then(({ code }) => code)
-  const styleSheetHash = styleSheet && generateStyleSheetHash(styleSheetBody)
+  const styleSheetHash = styleSheetBody && await generateStyleSheetHash(styleSheetBody)
 
   const pageBody = `<!DOCTYPE html>
 <html lang="en">
@@ -110,7 +130,7 @@ ${headNodes !== null
   ? headNodes
   : ''}
 
-${(existsSync('./src/islands') && sessionStorage.getItem('hydrationScripts') !== null)
+${sessionStorage.getItem('hydrationScripts') !== null
   ? sessionStorage.getItem('hydrationScripts')
   : ''}
 </head>
