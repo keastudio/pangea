@@ -14,8 +14,6 @@ export async function build (baseModuleUrl: string) {
     ? 'src'
     : ''
 
-  console.log('projectDirRelative', projectDirRelative)
-
   await generateManifest()
 
   const { default: manifest } = await import(join(baseDir, 'pangea.gen.ts'))

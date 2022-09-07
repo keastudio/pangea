@@ -7,12 +7,24 @@ import { dirname, basename, fromFileUrl, join } from 'https://deno.land/std@0.15
 
 import { lookup } from 'https://deno.land/x/mrmime@v1.0.0/mod.ts'
 import { generateManifest } from './generateManifest.ts'
+import { string } from 'https://esm.sh/v92/@types/prop-types@15.7.5/index.d.ts'
+
+export type routeType = (string | RegExp)
+export type responseHandlerType = ({ requestPrefix, requestPath }: { requestPrefix: string, requestPath: string }) => Promise<Response>
+
+type responseMapItem = [
+  routeType,
+  responseHandlerType
+]
 
 export async function dev (baseModuleUrl: string) {
   const baseDir = dirname(fromFileUrl(baseModuleUrl))
   const projectDir = existsSync(join(baseDir, 'src'))
     ? join(baseDir, 'src')
     : baseDir
+  const projectDirRelative = existsSync(join(baseDir, 'src'))
+    ? 'src'
+    : ''
 
   await generateManifest()
 
@@ -20,10 +32,6 @@ export async function dev (baseModuleUrl: string) {
 
   const islandsDir = join(projectDir, 'islands')
 
-  type responseMapItem = [
-    (string | RegExp),
-    ({ requestPrefix, requestPath }: { requestPrefix: string, requestPath: string }) => Promise<Response>
-  ]
   const responseMap: responseMapItem[] = []
 
   if (existsSync(islandsDir)) {
@@ -71,12 +79,12 @@ export async function dev (baseModuleUrl: string) {
   }
   
   const servePages = async (subPath: string[]) => {
-    for (const { name, isFile } of Deno.readDirSync(['./src/pages', ...subPath].join('/'))) {
+    for (const { name, isFile } of Deno.readDirSync(join(projectDir, 'pages', ...subPath))) {
       if (isFile) {
         const cssRouteRegex = RegExp(`^/${[...subPath, name.split('.')[0]].join('/')}\\.([a-z0-9]{6})\\.css`)
   
-        let styleSheetHashCached: string
-        let styleSheetBodyCached: string
+        let styleSheetHashCached: (string | null)
+        let styleSheetBodyCached: (string | null)
   
         responseMap.push([
           cssRouteRegex,
@@ -111,7 +119,7 @@ export async function dev (baseModuleUrl: string) {
         const dynamicParameterRegex = /:([a-z]+)/g
   
         if (dynamicParameterRegex.test(name)) {
-          const { default: Page, getStaticProps, getStaticPaths } = manifest.pages['./src/pages/' + [...subPath, name].join('/')]
+          const { default: Page, getStaticProps, getStaticPaths } = manifest.pages['./' + join(projectDirRelative, ...subPath, name)]
 
           const paths = (await getStaticPaths())?.paths
           if (name !== 'index' && paths) {
@@ -155,14 +163,14 @@ export async function dev (baseModuleUrl: string) {
   
               responseMap.push([
                 substitutedPath + '/',
-                ({ requestPrefix }: { requestPrefix: string }) => Response.redirect(requestPrefix + substitutedPath, 302)
+                async ({ requestPrefix }: { requestPrefix: string }) => await Promise.resolve(Response.redirect(requestPrefix + substitutedPath, 302))
               ])
             }
           }
         } else {
           const path = '/' + [...subPath, ...name.split('.')[0] === 'index' ? [] : [name.split('.')[0]]].join('/')
   
-          const { default: Page, getStaticProps } = manifest.pages['./src/pages/' + [...subPath, name].join('/')]
+          const { default: Page, getStaticProps } = manifest.pages['./' + join(projectDirRelative, 'pages', ...subPath, name)]
 
           responseMap.push([
             path,
@@ -206,37 +214,36 @@ export async function dev (baseModuleUrl: string) {
   
   servePages([])
   
-  const handler = async request => {
+  const handler = async (request: Request) => {
     const requestPrefix = new URL(request.url).origin
   
     const requestPath = new URL(request.url).pathname
   
-    const matchedRule = responseMap.reduce(
-      (acc, [route, responseHandler]) => (typeof route === 'object' && route.test(requestPath) === true)
-        ? ({
-            ruleType: 'regex',
-            responseHandler
-          })
-        : (typeof route === 'string' && requestPath === route)
-            ? ({
-                ruleType: 'exact',
-                responseHandler
-              })
-            : acc,
-      null
+    console.log(requestPath)
+    console.log('responseMap', responseMap)
+
+    const matchedRule = responseMap.find(
+      ([route]) => typeof route === 'string'
+        ? route === requestPath
+        : route.test(requestPath) === true
     )
+
+    console.log('matchedRule', matchedRule)
   
-    if (matchedRule !== null) {
-      return await matchedRule.responseHandler({
+    if (matchedRule) {
+      const responseHandler = matchedRule[1]
+      return await responseHandler({
         requestPath,
         requestPrefix
       })
     }
   
-    const mimeType = lookup(requestPath.split('.').slice(-1))
+    const staticDir = join(baseDir, 'static')
+
+    const mimeType = lookup(requestPath.split('.').slice(-1)[0])
   
-    if (mimeType !== undefined && existsSync('./src/static' + requestPath)) {
-      const file = await Deno.readFile('./src/static' + requestPath)
+    if (mimeType !== undefined && existsSync(join(staticDir, requestPath))) {
+      const file = await Deno.readFile(join(staticDir, requestPath))
       if (file) {
         return new Response(
           file,
