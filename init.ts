@@ -18,8 +18,8 @@ try {
   }
 }
 
-await Deno.mkdir(join(resolvedDirectory, 'src', 'pages'), { recursive: true })
-await Deno.mkdir(join(resolvedDirectory, 'src', 'islands'), { recursive: true })
+await Deno.mkdir(join(resolvedDirectory, 'pages'), { recursive: true })
+await Deno.mkdir(join(resolvedDirectory, 'islands'), { recursive: true })
 await Deno.mkdir(join(resolvedDirectory, 'static'), { recursive: true })
 
 const importMapJson = JSON.stringify(
@@ -90,9 +90,9 @@ if (useVSCode) {
 }
 
 await Deno.writeTextFile(
-  join(resolvedDirectory, 'src', 'islands', 'Counter.tsx'),
+  join(resolvedDirectory, 'islands', 'Counter.tsx'),
   `import React from 'react'
-import { css, combine } from '$pangea/src/css.ts'
+import { css, combine } from '$pangea/css.ts'
 
 const Counter = ({ initialCount }: { initialCount: number }) => {
   const [count, setCount] = React.useState(initialCount)
@@ -129,18 +129,17 @@ export { Counter as default }
 )
 
 await Deno.writeTextFile(
-  join(resolvedDirectory, 'src', 'pages', 'index.tsx'),
+  join(resolvedDirectory, 'pages', 'index.tsx'),
   `import React from 'react'
-import { Island } from '$pangea/src/Island.ts'
+import { Island } from '$pangea/Island.ts'
 import Counter from '../islands/Counter.tsx'
 
-const Page = ({ title, servestApp }: { title: string, servestApp: any }) => {
+const Page = ({ title }: { title: string }) => {
   return (
     <>
       <h1>{title}</h1>
       <Island
-        servestApp={servestApp}
-        path='src/islands/Counter.tsx'
+        path='islands/Counter.tsx'
         app={Counter}
         data={{ initialCount: 0 }}
       />

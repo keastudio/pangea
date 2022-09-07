@@ -1,4 +1,4 @@
-function hash (str) {
+function hash (str: string) {
   let h = 0
   let k; let i = 0; let len = str.length
   for (; len >= 4; ++i, len -= 4) {
@@ -10,8 +10,10 @@ function hash (str) {
   switch (len) {
     case 3:
       h ^= (str.charCodeAt(i + 2) & 255) << 16
+      break
     case 2:
       h ^= (str.charCodeAt(i + 1) & 255) << 8
+      break
     case 1:
       h ^= str.charCodeAt(i) & 255
       h = (h & 65535) * 1540483477 + ((h >>> 16) * 59797 << 16)
@@ -45,8 +47,8 @@ function css (templateStringArray: TemplateStringsArray, ...templateArgs: (strin
   return cssClassName
 }
 
-function combine (...args) {
-  return args.reduce(
+function combine (...args: (string | [boolean, string] | [boolean, string, string])[]) {
+  return <string|undefined>args.reduce(
     (acc, current) => typeof current === 'string'
       ? acc + ' ' + current
       : (Array.isArray(current) && [2, 3].includes(current.length))
@@ -57,7 +59,7 @@ function combine (...args) {
               : acc
           : acc,
     ''
-  ) || null
+  ) || undefined
 }
 
 export { css, combine }

@@ -1,10 +1,13 @@
 import React from 'react'
+import type { FunctionComponent, ComponentClass } from 'react'
 import ReactDOMServer from 'react-dom/server'
 
 import { createHash } from 'https://deno.land/std@0.152.0/hash/mod.ts'
 import { existsSync } from 'https://deno.land/std@0.152.0/fs/mod.ts'
 
-function Island ({ path, app, data, servestApp }) {
+function Island ({ path, app, data }: { path: string, app: (FunctionComponent<Record<string, unknown>> | ComponentClass<Record<string, unknown>>), data: Record<string, unknown> }) {
+  const devServerHandler = window.devServerHandler
+
   if ('globalStore' in data) {
     throw new Error(`The data prop for the Island component contained the property "globalStore" (for path "${path}"). This should not be included, becuase the framework handles passing this to the frontend.`)
   }
@@ -25,18 +28,20 @@ function Island ({ path, app, data, servestApp }) {
     )
   `
 
-  if (servestApp) {
-    servestApp(
+  if (devServerHandler) {
+    devServerHandler(
       '/' + hydrateIslandFilename,
       async () => {
-        return new Response(
-          scriptBody,
-          {
-            status: 200,
-            headers: new Headers({
-              'content-type': 'application/javascript'
-            })
-          }
+        return await Promise.resolve(
+          new Response(
+            scriptBody,
+            {
+              status: 200,
+              headers: new Headers({
+                'content-type': 'application/javascript'
+              })
+            }
+          )
         )
       }
     )

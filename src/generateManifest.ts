@@ -1,10 +1,12 @@
-async function generateManifest () {
-  const paths = []
+import { join } from 'https://deno.land/std@0.150.0/path/mod.ts'
 
-  const generateManifest = subPath => {
-    for (const { name, isFile } of Deno.readDirSync(['./src/pages', ...subPath].join('/'))) {
+async function generateManifest ({ baseDir, projectDir, projectDirRelative }: { baseDir: string, projectDir: string, projectDirRelative: string }) {
+  const paths: string[] = []
+
+  const generateManifest = (subPath: string[]) => {
+    for (const { name, isFile } of Deno.readDirSync(join(projectDir, 'pages', ...subPath))) {
       if (isFile) {
-        paths.push('./src/pages/' + [...subPath, name].join('/'))
+        paths.push('./' + join(projectDirRelative, 'pages', ...subPath, name))
       } else {
         generateManifest([...subPath, name])
       }
@@ -13,8 +15,10 @@ async function generateManifest () {
   
   generateManifest([])
 
+  const manifestPath = join(baseDir, 'pangea.gen.ts')
+
   await Deno.writeTextFile(
-    `./pangea.gen.ts`,
+    join(baseDir, 'pangea.gen.ts'),
     `
       ${paths.map((path, index) => `import * as \$${index} from '${path}'`).join('\n')}
 
@@ -27,6 +31,10 @@ async function generateManifest () {
       export { manifest as default }
     `
   )
+
+  const { default: manifest } = await import(manifestPath)
+
+  return manifest
 }
 
 export { generateManifest }

@@ -16,20 +16,28 @@ type responseMapItem = [
   responseHandlerType
 ]
 
+declare global {
+  let devServerHandler: (route: routeType, responseHandler: responseHandlerType) => void
+  interface Window {
+    devServerHandler: (route: routeType, responseHandler: responseHandlerType) => void 
+  }
+}
+
+
 export async function dev (baseModuleUrl: string) {
   const baseDir = dirname(fromFileUrl(baseModuleUrl))
-  const projectDir = existsSync(join(baseDir, 'src'))
-    ? join(baseDir, 'src')
-    : baseDir
   const projectDirRelative = existsSync(join(baseDir, 'src'))
     ? 'src'
     : ''
+  const projectDir = join(baseDir, projectDirRelative)
 
-  await generateManifest()
-
-  const { default: manifest } = await import(join(baseDir, 'pangea.gen.ts'))
+  const manifest = await generateManifest({ baseDir, projectDir, projectDirRelative })
 
   const islandsDir = join(projectDir, 'islands')
+
+  window.devServerHandler = (route: routeType, responseHandler: responseHandlerType) => {
+    responseMap.push([route, responseHandler])
+  }
 
   const responseMap: responseMapItem[] = []
 
@@ -140,10 +148,7 @@ export async function dev (baseModuleUrl: string) {
                     Page,
                     getStaticProps,
                     path: [...subPath, name].join('/'),
-                    params,
-                    servestApp: (route, responseHandler) => {
-                      responseMap.push([route, responseHandler])
-                    }
+                    params
                   })
   
                   styleSheetHashCached = styleSheetHash
@@ -178,10 +183,7 @@ export async function dev (baseModuleUrl: string) {
               const { pageBody, styleSheetHash, styleSheetBody } = await handlePage({
                 Page,
                 getStaticProps,
-                path: [...subPath, name].join('/'),
-                servestApp: (route, responseHandler) => {
-                  responseMap.push([route, responseHandler])
-                }
+                path: [...subPath, name].join('/')
               })
   
               styleSheetHashCached = styleSheetHash

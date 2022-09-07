@@ -10,7 +10,6 @@ import nested from 'https://esm.sh/postcss-nested@5.0.6?pin=v92&bundle'
 
 import { existsSync } from 'https://deno.land/std@0.152.0/fs/mod.ts'
 import { join } from 'https://deno.land/std@0.150.0/path/mod.ts'
-import type { routeType, responseHandlerType } from './dev.ts'
 
 const generateStyleSheetHash = async (text: string) => {
   const encoder = new TextEncoder()
@@ -89,11 +88,10 @@ type handlePageArgs = {
   Page: (props: Record<string, unknown>) => JSX.Element,
   getStaticProps: ({ params }: { params: Record<string, unknown> | undefined }) => ({ props: Record<string, unknown> }),
   path: string,
-  params?: Record<string, unknown>,
-  servestApp?: (route: routeType, responseHandler: responseHandlerType) => void
+  params?: Record<string, unknown>
 }
 
-const handlePage = async ({ Page, getStaticProps, path, params, servestApp }: handlePageArgs) => {
+const handlePage = async ({ Page, getStaticProps, path, params }: handlePageArgs) => {
   sessionStorage.removeItem('styleSheet')
   sessionStorage.removeItem('headNodes')
   sessionStorage.removeItem('hydrationScripts')
@@ -103,7 +101,7 @@ const handlePage = async ({ Page, getStaticProps, path, params, servestApp }: ha
     : { props: {} }
 
   const pageMarkup = ReactDOMServer.renderToStaticMarkup(
-    Page({ ...pageProps, servestApp: servestApp })
+    Page({ ...pageProps })
   )
 
   const styleSheet = sessionStorage.getItem('styleSheet')

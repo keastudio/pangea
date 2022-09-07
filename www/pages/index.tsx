@@ -7,7 +7,7 @@ import Counter from '../islands/Counter.tsx'
 
 import ResponsivePicture from '../components/ResponsivePicture.tsx'
 
-const Page = ({ title, description, servestApp }: { title: string, description: string, servestApp: any }) => {
+const Page = ({ title, description }: { title: string, description: string }) => {
   return (
     <>
       <Head>
@@ -294,7 +294,6 @@ const Page = ({ title, description, servestApp }: { title: string, description: 
           `}
         >
           <Island
-            servestApp={servestApp}
             path='src/islands/Counter.tsx'
             app={Counter}
             data={{ initialCount: 0 }}

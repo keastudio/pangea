@@ -7,16 +7,12 @@ import { generateManifest } from './generateManifest.ts'
 
 export async function build (baseModuleUrl: string) {
   const baseDir = dirname(fromFileUrl(baseModuleUrl))
-  const projectDir = existsSync(join(baseDir, 'src'))
-    ? join(baseDir, 'src')
-    : baseDir
   const projectDirRelative = existsSync(join(baseDir, 'src'))
     ? 'src'
     : ''
+  const projectDir = join(baseDir, projectDirRelative)
 
-  await generateManifest()
-
-  const { default: manifest } = await import(join(baseDir, 'pangea.gen.ts'))
+  const manifest = await generateManifest({ baseDir, projectDir, projectDirRelative })
 
   // Clear out the dist directory before building
   await emptyDir(join(baseDir, 'dist'))
