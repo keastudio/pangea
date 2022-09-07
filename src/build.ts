@@ -86,7 +86,7 @@ export async function build (baseModuleUrl: string) {
                 params
               })
 
-              if (styleSheetHash) {
+              if (styleSheetHash && styleSheetBody) {
                 Deno.writeTextFileSync(
                   `${path}.${styleSheetHash}.css`,
                   styleSheetBody
@@ -104,7 +104,7 @@ export async function build (baseModuleUrl: string) {
 
           const { styleSheetHash, styleSheetBody, pageBody } = await handlePage({ Page, getStaticProps, path: [...subPath, name].join('/') })
 
-          if (styleSheetHash) {
+          if (styleSheetHash && styleSheetBody) {
             Deno.writeTextFileSync(
               `${['./dist', ...subPath, name.split('.')[0]].join('/')}.${styleSheetHash}.css`,
               styleSheetBody

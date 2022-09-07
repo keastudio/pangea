@@ -48,7 +48,7 @@ const generateIslandFile = async (path: string) => {
   return `import{React}from'./shared.js';${outputFiles[0].text}`
 }
 
-const generateSharedDependenciesFile = async ({ projectDir }) => {
+const generateSharedDependenciesFile = async ({ projectDir }: { projectDir: string }) => {
   const sharedTemporaryFile = Deno.makeTempFileSync({ suffix: '.js' })
 
   await Deno.writeTextFile(
@@ -89,8 +89,8 @@ type handlePageArgs = {
   Page: (props: Record<string, unknown>) => JSX.Element,
   getStaticProps: ({ params }: { params: Record<string, unknown> | undefined }) => ({ props: Record<string, unknown> }),
   path: string,
-  params: Record<string, unknown> | undefined,
-  servestApp: () => void
+  params?: Record<string, unknown>,
+  servestApp?: () => void
 }
 
 const handlePage = async ({ Page, getStaticProps, path, params, servestApp }: handlePageArgs) => {

@@ -19,7 +19,12 @@ export async function dev (baseModuleUrl: string) {
   const { default: manifest } = await import(join(baseDir, 'pangea.gen.ts'))
 
   const islandsDir = join(projectDir, 'islands')
-  const responseMap = []
+
+  type responseMapItem = [
+    (string | RegExp),
+    ({ requestPrefix, requestPath }: { requestPrefix: string, requestPath: string }) => Promise<Response>
+  ]
+  const responseMap: responseMapItem[] = []
 
   if (existsSync(islandsDir)) {
     for (const { name, isFile } of Deno.readDirSync(islandsDir)) {
@@ -50,48 +55,54 @@ export async function dev (baseModuleUrl: string) {
       async () => {
         const responseBody = await generateSharedDependenciesFile({ projectDir })
   
-        return new Response(
-          responseBody,
-          {
-            status: 200,
-            headers: new Headers({
-              'content-type': 'application/javascript'
-            })
-          }
+        return await Promise.resolve(
+          new Response(
+            responseBody,
+            {
+              status: 200,
+              headers: new Headers({
+                'content-type': 'application/javascript'
+              })
+            }
+          )
         )
       }
     ])
   }
   
-  const servePages = async subPath => {
+  const servePages = async (subPath: string[]) => {
     for (const { name, isFile } of Deno.readDirSync(['./src/pages', ...subPath].join('/'))) {
       if (isFile) {
         const cssRouteRegex = RegExp(`^/${[...subPath, name.split('.')[0]].join('/')}\\.([a-z0-9]{6})\\.css`)
   
-        let styleSheetHashCached
-        let styleSheetBodyCached
+        let styleSheetHashCached: string
+        let styleSheetBodyCached: string
   
         responseMap.push([
           cssRouteRegex,
           async ({ requestPath }) => {
-            const requestId = requestPath.match(cssRouteRegex)[1]
+            const requestId = (requestPath?.match(cssRouteRegex) ?? [])[1]
   
             if (requestId === styleSheetHashCached) {
-              return new Response(
-                styleSheetBodyCached,
-                {
-                  status: 200,
-                  headers: new Headers({
-                    'content-type': 'text/css'
-                  })
-                }
+              return await Promise.resolve(
+                new Response(
+                  styleSheetBodyCached,
+                  {
+                    status: 200,
+                    headers: new Headers({
+                      'content-type': 'text/css'
+                    })
+                  }
+                )
               )
             } else {
-              return new Response(
-                null,
-                {
-                  status: 404
-                }
+              return await Promise.resolve(
+                new Response(
+                  null,
+                  {
+                    status: 404
+                  }
+                )
               )
             }
           }
@@ -144,7 +155,7 @@ export async function dev (baseModuleUrl: string) {
   
               responseMap.push([
                 substitutedPath + '/',
-                ({ requestPrefix }) => Response.redirect(requestPrefix + substitutedPath, 302)
+                ({ requestPrefix }: { requestPrefix: string }) => Response.redirect(requestPrefix + substitutedPath, 302)
               ])
             }
           }
@@ -183,7 +194,7 @@ export async function dev (baseModuleUrl: string) {
           if (name !== 'index') {
             responseMap.push([
               path + '/',
-              ({ requestPrefix }) => Response.redirect(requestPrefix + path, 302)
+              async ({ requestPrefix }) => await Promise.resolve(Response.redirect(requestPrefix + path, 302))
             ])
           }
         }
