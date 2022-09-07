@@ -20,7 +20,7 @@ try {
 
 await Deno.mkdir(join(resolvedDirectory, 'src', 'pages'), { recursive: true })
 await Deno.mkdir(join(resolvedDirectory, 'src', 'islands'), { recursive: true })
-await Deno.mkdir(join(resolvedDirectory, 'src', 'static'), { recursive: true })
+await Deno.mkdir(join(resolvedDirectory, 'static'), { recursive: true })
 
 const importMapJson = JSON.stringify(
   {

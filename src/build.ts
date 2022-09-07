@@ -10,22 +10,27 @@ export async function build (baseModuleUrl: string) {
   const projectDir = existsSync(join(baseDir, 'src'))
     ? join(baseDir, 'src')
     : baseDir
+  const projectDirRelative = existsSync(join(baseDir, 'src'))
+    ? 'src'
+    : ''
+
+  console.log('projectDirRelative', projectDirRelative)
 
   await generateManifest()
 
-  const { default: manifest } = await import(join(baseDir, '/pangea.gen.ts'))
+  const { default: manifest } = await import(join(baseDir, 'pangea.gen.ts'))
 
   // Clear out the dist directory before building
-  await emptyDir('./dist')
+  await emptyDir(join(baseDir, 'dist'))
 
   const islandsDir = join(projectDir, 'islands')
 
   if (existsSync(islandsDir)) {
     for await (const { name, isFile } of Deno.readDir(islandsDir)) {
-      const path = './src/islands/' + name
+      const path = join(projectDir, 'islands', name)
       if (isFile === true) {
         Deno.writeTextFile(
-          './dist/' + name.split('.')[0] + '.js',
+          join(baseDir, 'dist/', name.split('.')[0] + '.js'),
           await generateIslandFile(path)
         )
       }
@@ -37,12 +42,14 @@ export async function build (baseModuleUrl: string) {
     )
   }
 
-  // Copy files in static to dist if they exist
-  if (existsSync('./src/static')) {
-    for await (const { name, path, isDirectory } of walk('./src/static')) {
-      const destinationPath = path.replace('src/static', './dist/')
+  const staticDir = join(baseDir, 'static')
 
-      if (path === 'src/static') {
+  // Copy files in static to dist if they exist
+  if (existsSync(staticDir)) {
+    for await (const { name, path, isDirectory } of walk(staticDir)) {
+      const destinationPath = path.replace(staticDir, join(baseDir, 'dist'))
+
+      if (path === staticDir) {
         // pass
       } else if (isDirectory) {
         await Deno.mkdir(destinationPath)
@@ -60,17 +67,17 @@ export async function build (baseModuleUrl: string) {
   }
 
   const outputPages = async (subPath: string[]) => {
-    for (const { name, isFile } of Deno.readDirSync(['./src/pages', ...subPath].join('/'))) {
+    for (const { name, isFile } of Deno.readDirSync(join(projectDir, 'pages', ...subPath))) {
       if (isFile) {
         const dynamicParameterRegex = /:([a-z]+)/g
 
         if (dynamicParameterRegex.test(name)) {
-          const { default: Page, getStaticProps, getStaticPaths } = manifest.pages['./src/pages/' + [...subPath, name].join('/')]
+          const { default: Page, getStaticProps, getStaticPaths } = manifest.pages['./' + join(projectDirRelative, 'pages', ...subPath, name)]
 
           const paths = (await getStaticPaths())?.paths
           if (name !== 'index' && paths) {
             for (const { params } of paths) {
-              const path = ['./dist', ...subPath, name.split('.')[0]].join('/')
+              const path = join(baseDir, 'dist', ...subPath, name.split('.')[0])
 
               const substitutedPath = path.replace(
                 dynamicParameterRegex,
@@ -100,24 +107,25 @@ export async function build (baseModuleUrl: string) {
             }
           }
         } else {
-          const { default: Page, getStaticProps } = manifest.pages['./src/pages/' + [...subPath, name].join('/')]
+          console.log(join(projectDirRelative, 'pages', ...subPath, name))
+          const { default: Page, getStaticProps } = manifest.pages['./' + join(projectDirRelative, 'pages', ...subPath, name)]
 
           const { styleSheetHash, styleSheetBody, pageBody } = await handlePage({ Page, getStaticProps, path: [...subPath, name].join('/') })
 
           if (styleSheetHash && styleSheetBody) {
             Deno.writeTextFileSync(
-              `${['./dist', ...subPath, name.split('.')[0]].join('/')}.${styleSheetHash}.css`,
+              `${join(baseDir, 'dist', ...subPath, name.split('.')[0])}.${styleSheetHash}.css`,
               styleSheetBody
             )
           }
 
           Deno.writeTextFileSync(
-            `${['./dist', ...subPath, name.split('.')[0]].join('/')}.html`,
+            `${join(baseDir, 'dist', ...subPath, name.split('.')[0])}.html`,
             pageBody
           )
         }
       } else {
-        Deno.mkdirSync(['./dist', ...subPath, name].join('/'))
+        Deno.mkdirSync(join(baseDir, 'dist', ...subPath, name))
         await outputPages([...subPath, name])
       }
     }
