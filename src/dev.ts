@@ -30,7 +30,7 @@ export async function dev (baseModuleUrl: string) {
     : ''
   const projectDir = join(baseDir, projectDirRelative)
 
-  const manifest = await generateManifest({ baseDir, projectDir, projectDirRelative })
+  const manifest = await generateManifest({ baseModuleUrl, projectDir, projectDirRelative })
 
   const islandsDir = join(projectDir, 'islands')
 
