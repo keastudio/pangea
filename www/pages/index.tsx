@@ -1,8 +1,8 @@
 import React from 'react'
 import { css } from '$pangea/src/css.ts'
-import { Head } from '$pangea/src/Head.ts'
+import { Head } from '$pangea/src/head.ts'
 
-import { Island } from '$pangea/src/Island.ts'
+import { Island } from '$pangea/src/island.ts'
 import Counter from '../islands/Counter.tsx'
 
 import ResponsivePicture from '../components/ResponsivePicture.tsx'

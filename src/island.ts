@@ -1,11 +1,12 @@
+/// <reference path='./dev.ts' />
 import React from 'react'
-import type { FunctionComponent, ComponentClass } from 'react'
 import ReactDOMServer from 'react-dom/server'
 
 import { createHash } from 'https://deno.land/std@0.152.0/hash/mod.ts'
 import { existsSync } from 'https://deno.land/std@0.152.0/fs/mod.ts'
 
-function Island ({ path, app, data }: { path: string, app: (FunctionComponent<Record<string, unknown>> | ComponentClass<Record<string, unknown>>), data: Record<string, unknown> }) {
+// deno-lint-ignore no-explicit-any
+function Island ({ path, app, data }: { path: string, app: (React.FunctionComponent<any> | React.ComponentClass<any, any>), data: Record<string, unknown> }) {
   const devServerHandler = window.devServerHandler
 
   if ('globalStore' in data) {
@@ -16,14 +17,14 @@ function Island ({ path, app, data }: { path: string, app: (FunctionComponent<Re
   const hydrateIslandFilename = 'hydrate-' + islandFilename
 
   const scriptBody = `
-    import { React, ReactDOMClient, ${existsSync('./src/store.js') ? 'globalStore' : ''} } from './shared.js'
+    import { React, ReactDOMClient, ${existsSync('./src/store.ts') ? 'globalStore' : ''} } from './shared.js'
     import App from './${path.split('/').slice(-1)[0].split('.')[0] + '.js'}'
 
     ReactDOMClient.hydrateRoot(
       document.querySelector('#${islandFilename.split('.')[0]}'),
       React.createElement(
         App,
-        { ...JSON.parse(\`${JSON.stringify(data)}\`), ${existsSync('./src/store.js') ? 'globalStore' : ''} }
+        { ...JSON.parse(\`${JSON.stringify(data)}\`), ${existsSync('./src/store.ts') ? 'globalStore' : ''} }
       )
     )
   `

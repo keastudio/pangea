@@ -56,9 +56,9 @@ const generateSharedDependenciesFile = async ({ projectDir }: { projectDir: stri
       import React from 'react'
       import ReactDOMClient from 'react-dom/client'
 
-      ${existsSync(join(projectDir, 'store.js'))
+      ${existsSync(join(projectDir, 'store.ts'))
         ? `
-          import { globalStore } from '${Deno.cwd()}/src/store.js'
+          import { globalStore } from '${Deno.cwd()}/src/store.ts'
 
           export { React, ReactDOMClient, globalStore }
         `

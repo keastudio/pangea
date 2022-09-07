@@ -101,7 +101,6 @@ export async function build (baseModuleUrl: string) {
             }
           }
         } else {
-          console.log(join(projectDirRelative, 'pages', ...subPath, name))
           const { default: Page, getStaticProps } = manifest.pages['./' + join(projectDirRelative, 'pages', ...subPath, name)]
 
           const { styleSheetHash, styleSheetBody, pageBody } = await handlePage({ Page, getStaticProps, path: [...subPath, name].join('/') })

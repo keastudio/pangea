@@ -23,7 +23,6 @@ declare global {
   }
 }
 
-
 export async function dev (baseModuleUrl: string) {
   const baseDir = dirname(fromFileUrl(baseModuleUrl))
   const projectDirRelative = existsSync(join(baseDir, 'src'))
@@ -126,7 +125,6 @@ export async function dev (baseModuleUrl: string) {
         const dynamicParameterRegex = /:([a-z]+)/g
   
         if (dynamicParameterRegex.test(name)) {
-          console.log('./' + join(projectDirRelative, 'pages', ...subPath, name))
           const { default: Page, getStaticProps, getStaticPaths } = manifest.pages['./' + join(projectDirRelative, 'pages', ...subPath, name)]
 
           const paths = (await getStaticPaths())?.paths

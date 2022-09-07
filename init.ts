@@ -131,7 +131,7 @@ export { Counter as default }
 await Deno.writeTextFile(
   join(resolvedDirectory, 'pages', 'index.tsx'),
   `import React from 'react'
-import { Island } from '$pangea/Island.ts'
+import { Island } from '$pangea/island.ts'
 import Counter from '../islands/Counter.tsx'
 
 const Page = ({ title }: { title: string }) => {
