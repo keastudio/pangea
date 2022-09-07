@@ -1,6 +1,6 @@
 import { join } from 'https://deno.land/std@0.150.0/path/mod.ts'
 
-async function generateManifest ({ baseDir, projectDir, projectDirRelative }: { baseDir: string, projectDir: string, projectDirRelative: string }) {
+async function generateManifest ({ baseModuleUrl, projectDir, projectDirRelative }: { baseModuleUrl: string, projectDir: string, projectDirRelative: string }) {
   const paths: string[] = []
 
   const generateManifest = (subPath: string[]) => {
@@ -15,10 +15,10 @@ async function generateManifest ({ baseDir, projectDir, projectDirRelative }: { 
   
   generateManifest([])
 
-  const manifestPath = join(baseDir, 'pangea.gen.ts')
+  const manifestPath = baseModuleUrl.split('/').slice(0, -1).join('/') + '/pangea.gen.ts'
 
-  await Deno.writeTextFile(
-    join(baseDir, 'pangea.gen.ts'),
+  Deno.writeTextFileSync(
+    manifestPath.replace('file://', ''),
     `
       ${paths.map((path, index) => `import * as \$${index} from '${path}'`).join('\n')}
 

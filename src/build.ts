@@ -12,7 +12,7 @@ export async function build (baseModuleUrl: string) {
     : ''
   const projectDir = join(baseDir, projectDirRelative)
 
-  const manifest = await generateManifest({ baseDir, projectDir, projectDirRelative })
+  const manifest = await generateManifest({ baseModuleUrl, projectDir, projectDirRelative })
 
   // Clear out the dist directory before building
   await emptyDir(join(baseDir, 'dist'))
