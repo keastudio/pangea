@@ -7,7 +7,6 @@ import { dirname, basename, fromFileUrl, join } from 'https://deno.land/std@0.15
 
 import { lookup } from 'https://deno.land/x/mrmime@v1.0.0/mod.ts'
 import { generateManifest } from './generateManifest.ts'
-import { string } from 'https://esm.sh/v92/@types/prop-types@15.7.5/index.d.ts'
 
 export type routeType = (string | RegExp)
 export type responseHandlerType = ({ requestPrefix, requestPath }: { requestPrefix: string, requestPath: string }) => Promise<Response>
@@ -199,7 +198,7 @@ export async function dev (baseModuleUrl: string) {
             }
           ])
   
-          if (name !== 'index') {
+          if (name.split('.')[0] !== 'index') {
             responseMap.push([
               path + '/',
               async ({ requestPrefix }) => await Promise.resolve(Response.redirect(requestPrefix + path, 302))
@@ -219,16 +218,11 @@ export async function dev (baseModuleUrl: string) {
   
     const requestPath = new URL(request.url).pathname
   
-    console.log(requestPath)
-    console.log('responseMap', responseMap)
-
     const matchedRule = responseMap.find(
       ([route]) => typeof route === 'string'
         ? route === requestPath
         : route.test(requestPath) === true
     )
-
-    console.log('matchedRule', matchedRule)
   
     if (matchedRule) {
       const responseHandler = matchedRule[1]
