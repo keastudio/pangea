@@ -1,9 +1,17 @@
 import { stop, transform } from 'https://deno.land/x/esbuild@v0.14.54/mod.js'
 import { emptyDirSync, walk, existsSync } from 'https://deno.land/std@0.152.0/fs/mod.ts'
+import { dirname, fromFileUrl, join } from 'https://deno.land/std@0.150.0/path/mod.ts'
 
 import { generateIslandFile, generateSharedDependenciesFile, handlePage } from './utils.ts'
+import { generateManifest } from './generateManifest.ts'
 
-export async function build (manifest: string) {
+export async function build (baseModuleUrl: string) {
+  const baseDir = dirname(fromFileUrl(baseModuleUrl))
+
+  await generateManifest()
+
+  const { default: manifest } = await import(join(baseDir, '/pangea.gen.ts'))
+
   // Clear out the dist directory before building
   emptyDirSync('./dist')
 

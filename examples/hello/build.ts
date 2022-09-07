@@ -1,5 +1,5 @@
 #!/usr/bin/env -S deno run -A
 
-import { runBuild } from '$pangea/runBuild.ts'
+import { build } from '$pangea/build.ts'
 
-runBuild(import.meta.url)
+build(import.meta.url)

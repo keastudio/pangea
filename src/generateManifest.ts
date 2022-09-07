@@ -1,4 +1,4 @@
-function generateManifest () {
+async function generateManifest () {
   const paths = []
 
   const generateManifest = subPath => {
@@ -13,7 +13,7 @@ function generateManifest () {
   
   generateManifest([])
 
-  Deno.writeTextFileSync(
+  await Deno.writeTextFile(
     `./pangea.gen.ts`,
     `
       ${paths.map((path, index) => `import * as \$${index} from '${path}'`).join('\n')}

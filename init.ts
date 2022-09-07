@@ -45,19 +45,19 @@ await Deno.writeTextFile(
   join(resolvedDirectory, 'build.ts'),
   `#!/usr/bin/env -S deno run -A
 
-import { runBuild } from '$pangea/runBuild.ts'
+import { build } from '$pangea/build.ts'
 
-runBuild(import.meta.url)
+build(import.meta.url)
 `
 )
 
 await Deno.writeTextFile(
-  join(resolvedDirectory, 'start.ts'),
+  join(resolvedDirectory, 'dev.ts'),
   `#!/usr/bin/env -S deno run -A --watch=pages/
 
-import { runStart } from '$pangea/runStart.ts'
+import { dev } from '$pangea/deb.ts'
     
-runStart(import.meta.url)
+dev(import.meta.url)
 `
 )
 
@@ -165,7 +165,7 @@ await Deno.writeTextFile(
   JSON.stringify(
     {
       'tasks': {
-        'start': 'deno run -A --watch=pages/ start.ts',
+        'start': 'deno run -A --watch=pages/ dev.ts',
         'build': 'deno run -A build.ts'
       },
       'importMap': './import_map.json'

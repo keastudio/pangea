@@ -3,10 +3,18 @@ import { serve as serveHttp } from 'https://deno.land/std@0.152.0/http/server.ts
 import { existsSync } from 'https://deno.land/std@0.152.0/fs/mod.ts'
 
 import { generateIslandFile, generateSharedDependenciesFile, handlePage } from './utils.ts'
+import { dirname, fromFileUrl, join } from 'https://deno.land/std@0.150.0/path/mod.ts'
 
 import { lookup } from 'https://deno.land/x/mrmime@v1.0.0/mod.ts'
+import { generateManifest } from './generateManifest.ts'
 
-export async function serve (manifest) {
+export async function dev (baseModuleUrl: string) {
+  const baseDir = dirname(fromFileUrl(baseModuleUrl))
+
+  await generateManifest()
+
+  const { default: manifest } = await import(join(baseDir, 'pangea.gen.ts'))
+
   const responseMap = []
 
   if (existsSync('./src/islands')) {
