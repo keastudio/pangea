@@ -142,7 +142,7 @@ const Page = ({ title, description }: { title: string, description: string }) =>
             'Exports static files, which can be deployed to Netlify and Vercel',
             'No JavaScript is shipped to the frontend by default',
             'Island architecture—only interactive React components are hydrated on the client side',
-            'Built in support for CSS-in-JS, which is server-side generated for performance',
+            'Built in support for CSS-in-JS, which is statically generated for performance',
             'Next.js inspired file-system routing'
           ]
             .map(
@@ -285,7 +285,7 @@ const Page = ({ title, description }: { title: string, description: string }) =>
             margin-top: 1.5rem;
           `}
         >
-          The component below is referred to as an "island component". It was server-side generated at the time the build script was run, with an initial value of 0. This component is hydrated on the client side, enabling the state to be updated with the buttons below.
+          The component below is referred to as an "island component". It was statically generated at the time the build script was run, with an initial value of 0. This component is hydrated on the client side, enabling the state to be updated with the buttons below.
         </p>
 
         <div
