@@ -1,0 +1,10 @@
+[build]
+  base = "www/"
+
+  publish = "dist/"
+
+  command = "curl -fsSL https://cdn.deno.land/install/versions/v0.1.6/raw/install.sh | sh && export PATH=\"/opt/buildhome/.deno/bin:$PATH\" && deno task build"
+
+[[edge_functions]]
+  path = "/"
+  function = "homepage"

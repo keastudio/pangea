@@ -13,7 +13,7 @@ Features:
 ### Getting started
 
 ```sh
-deno run -A -r https://deno.land/x/pangea/init.ts my-project-name 
+deno run -A -r https://pangea.sh my-project-name 
 cd my-project-name
 deno task start
 ```
