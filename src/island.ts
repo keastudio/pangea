@@ -39,7 +39,7 @@ function Island ({ path, app, data }: { path: string, app: (React.FunctionCompon
             {
               status: 200,
               headers: new Headers({
-                'content-type': 'application/javascript'
+                'content-type': 'application/javascript; charset=UTF-8'
               })
             }
           )

@@ -88,10 +88,11 @@ type handlePageArgs = {
   Page: (props: Record<string, unknown>) => JSX.Element,
   getStaticProps: ({ params }: { params: Record<string, unknown> | undefined }) => ({ props: Record<string, unknown> }),
   path: string,
-  params?: Record<string, unknown>
+  params?: Record<string, unknown>,
+  reloadScriptSrc?: string
 }
 
-const handlePage = async ({ Page, getStaticProps, path, params }: handlePageArgs) => {
+const handlePage = async ({ Page, getStaticProps, path, params, reloadScriptSrc }: handlePageArgs) => {
   sessionStorage.removeItem('styleSheet')
   sessionStorage.removeItem('headNodes')
   sessionStorage.removeItem('hydrationScripts')
@@ -132,6 +133,10 @@ ${headNodes !== null
 
 ${sessionStorage.getItem('hydrationScripts') !== null
   ? sessionStorage.getItem('hydrationScripts')
+  : ''}
+
+${reloadScriptSrc
+  ? `<script type="module" src="${reloadScriptSrc}"></script>`
   : ''}
 </head>
 <body>
