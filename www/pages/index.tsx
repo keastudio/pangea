@@ -196,7 +196,7 @@ const Page = ({ title, description }: { title: string, description: string }) =>
             color: #28534d;
           `}
         >
-          deno run -A -r https://deno.land/x/pangea/init.ts my-project-name
+          deno run -A -r https://pangea.sh my-project-name
         </code>
 
         <p

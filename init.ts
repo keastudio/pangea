@@ -55,7 +55,7 @@ await Deno.writeTextFile(
   join(resolvedDirectory, 'dev.ts'),
   `#!/usr/bin/env -S deno run -A
 
-import { dev } from '$pangea/deb.ts'
+import { dev } from '$pangea/dev.ts'
     
 dev(import.meta.url)
 `
