@@ -53,7 +53,7 @@ build(import.meta.url)
 
 await Deno.writeTextFile(
   join(resolvedDirectory, 'dev.ts'),
-  `#!/usr/bin/env -S deno run -A --watch=pages/
+  `#!/usr/bin/env -S deno run -A
 
 import { dev } from '$pangea/deb.ts'
     
