@@ -8,7 +8,7 @@ import { dirname, basename, fromFileUrl, join } from 'https://deno.land/std@0.15
 import { lookup } from 'https://deno.land/x/mrmime@v1.0.0/mod.ts'
 
 export type routeType = (string | RegExp)
-export type responseHandlerType = ({ requestPrefix, requestPath }: { requestPrefix: string, requestPath: string }) => Promise<Response>
+export type responseHandlerType = ({ requestPrefix, requestPath, request }: { requestPrefix: string, requestPath: string, request: Request }) => Promise<Response>
 
 type responseMapItem = [
   routeType,
@@ -31,6 +31,10 @@ export async function dev (baseModuleUrl: string) {
 
   const islandsDir = join(projectDir, 'islands')
 
+  const buildId = crypto.randomUUID()
+  const reloadScriptSrc = '/reload.js'
+  const reloadWebSocketUrl = '/alive'
+
   window.devServerHandler = (route: routeType, responseHandler: responseHandlerType) => {
     responseMap.push([route, responseHandler])
   }
@@ -52,7 +56,7 @@ export async function dev (baseModuleUrl: string) {
               {
                 status: 200,
                 headers: new Headers({
-                  'content-type': 'application/javascript'
+                  'content-type': 'application/javascript; charset=UTF-8'
                 })
               }
             )
@@ -72,7 +76,7 @@ export async function dev (baseModuleUrl: string) {
             {
               status: 200,
               headers: new Headers({
-                'content-type': 'application/javascript'
+                'content-type': 'application/javascript; charset=UTF-8'
               })
             }
           )
@@ -80,7 +84,7 @@ export async function dev (baseModuleUrl: string) {
       }
     ])
   }
-  
+
   const servePages = async (subPath: string[]) => {
     for (const { name, isFile } of Deno.readDirSync(join(projectDir, 'pages', ...subPath))) {
       if (isFile) {
@@ -143,7 +147,8 @@ export async function dev (baseModuleUrl: string) {
                     Page,
                     getStaticProps,
                     path: [...subPath, name].join('/'),
-                    params
+                    params,
+                    reloadScriptSrc
                   })
   
                   styleSheetHashCached = styleSheetHash
@@ -178,7 +183,8 @@ export async function dev (baseModuleUrl: string) {
               const { pageBody, styleSheetHash, styleSheetBody } = await handlePage({
                 Page,
                 getStaticProps,
-                path: [...subPath, name].join('/')
+                path: [...subPath, name].join('/'),
+                reloadScriptSrc
               })
   
               styleSheetHashCached = styleSheetHash
@@ -209,13 +215,69 @@ export async function dev (baseModuleUrl: string) {
     }
   }
   
-  servePages([])
+  await servePages([])
   
+  responseMap.push([
+    reloadWebSocketUrl,
+    async ({ request }) => {
+      let timer: number | undefined = undefined
+
+      const { socket: ws, response } = Deno.upgradeWebSocket(request)
+      ws.onopen = () => {
+        ws.send(buildId)
+        timer = setInterval(
+          () => {
+            ws.send(buildId)
+          },
+          1000
+        )
+      }
+      ws.onclose = () => {
+        clearInterval(timer)
+      }
+      
+      return await Promise.resolve(response)
+    }
+  ])
+
+  responseMap.push([
+    reloadScriptSrc,
+    async () => {
+      return await Promise.resolve(
+        new Response(
+          `
+            (function startWebsocket() {
+              const connection = new WebSocket('ws://' + window.location.host + '${reloadWebSocketUrl}')
+              
+              connection.onmessage = event => {
+                if (event.data !== '${buildId}') { 
+                  connection.close()
+                  location.reload()
+                }
+              }
+
+              connection.onclose = () => {
+                setTimeout(startWebsocket, 1000)
+              }
+            })()
+          `,
+          {
+            status: 200,
+            headers: {
+              'content-type': 'application/javascript; charset=UTF-8'
+            }
+          }
+  
+        )
+      )
+    }
+  ])
+
   const handler = async (request: Request) => {
     const requestPrefix = new URL(request.url).origin
   
     const requestPath = new URL(request.url).pathname
-  
+
     const matchedRule = responseMap.find(
       ([route]) => typeof route === 'string'
         ? route === requestPath
@@ -226,7 +288,8 @@ export async function dev (baseModuleUrl: string) {
       const responseHandler = matchedRule[1]
       return await responseHandler({
         requestPath,
-        requestPrefix
+        requestPrefix,
+        request
       })
     }
   
