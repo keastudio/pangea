@@ -164,7 +164,7 @@ await Deno.writeTextFile(
   JSON.stringify(
     {
       'tasks': {
-        'start': 'deno run -A --watch=pages/ dev.ts',
+        'start': 'deno run -A dev.ts',
         'build': 'deno run -A build.ts'
       },
       'importMap': './import_map.json'

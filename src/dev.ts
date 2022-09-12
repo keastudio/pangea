@@ -6,7 +6,6 @@ import { generateIslandFile, generateSharedDependenciesFile, handlePage } from '
 import { dirname, basename, fromFileUrl, join } from 'https://deno.land/std@0.150.0/path/mod.ts'
 
 import { lookup } from 'https://deno.land/x/mrmime@v1.0.0/mod.ts'
-import { generateManifest } from './generateManifest.ts'
 
 export type routeType = (string | RegExp)
 export type responseHandlerType = ({ requestPrefix, requestPath }: { requestPrefix: string, requestPath: string }) => Promise<Response>
@@ -29,8 +28,6 @@ export async function dev (baseModuleUrl: string) {
     ? 'src'
     : ''
   const projectDir = join(baseDir, projectDirRelative)
-
-  const manifest = await generateManifest({ baseModuleUrl, projectDir, projectDirRelative })
 
   const islandsDir = join(projectDir, 'islands')
 
@@ -125,7 +122,7 @@ export async function dev (baseModuleUrl: string) {
         const dynamicParameterRegex = /:([a-z]+)/g
   
         if (dynamicParameterRegex.test(name)) {
-          const { default: Page, getStaticProps, getStaticPaths } = manifest.pages['./' + join(projectDirRelative, 'pages', ...subPath, name)]
+          const { default: Page, getStaticProps, getStaticPaths } = await import('file://' + join(projectDir, 'pages', ...subPath, name))
 
           const paths = (await getStaticPaths())?.paths
           if (name !== 'index' && paths) {
@@ -173,7 +170,7 @@ export async function dev (baseModuleUrl: string) {
         } else {
           const path = '/' + [...subPath, ...name.split('.')[0] === 'index' ? [] : [name.split('.')[0]]].join('/')
   
-          const { default: Page, getStaticProps } = manifest.pages['./' + join(projectDirRelative, 'pages', ...subPath, name)]
+          const { default: Page, getStaticProps } = await import('file://' + join(projectDir, 'pages', ...subPath, name))
 
           responseMap.push([
             path,

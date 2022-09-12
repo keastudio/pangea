@@ -3,7 +3,6 @@ import { emptyDir, walk, existsSync } from 'https://deno.land/std@0.152.0/fs/mod
 import { dirname, fromFileUrl, join } from 'https://deno.land/std@0.150.0/path/mod.ts'
 
 import { generateIslandFile, generateSharedDependenciesFile, handlePage } from './utils.ts'
-import { generateManifest } from './generateManifest.ts'
 
 export async function build (baseModuleUrl: string) {
   const baseDir = dirname(fromFileUrl(baseModuleUrl))
@@ -11,8 +10,6 @@ export async function build (baseModuleUrl: string) {
     ? 'src'
     : ''
   const projectDir = join(baseDir, projectDirRelative)
-
-  const manifest = await generateManifest({ baseModuleUrl, projectDir, projectDirRelative })
 
   // Clear out the dist directory before building
   await emptyDir(join(baseDir, 'dist'))
@@ -66,7 +63,7 @@ export async function build (baseModuleUrl: string) {
         const dynamicParameterRegex = /:([a-z]+)/g
 
         if (dynamicParameterRegex.test(name)) {
-          const { default: Page, getStaticProps, getStaticPaths } = manifest.pages['./' + join(projectDirRelative, 'pages', ...subPath, name)]
+          const { default: Page, getStaticProps, getStaticPaths } = await import('file://' + join(projectDir, 'pages', ...subPath, name))
 
           const paths = (await getStaticPaths())?.paths
           if (name !== 'index' && paths) {
@@ -101,7 +98,7 @@ export async function build (baseModuleUrl: string) {
             }
           }
         } else {
-          const { default: Page, getStaticProps } = manifest.pages['./' + join(projectDirRelative, 'pages', ...subPath, name)]
+          const { default: Page, getStaticProps } = await import('file://' + join(projectDir, 'pages', ...subPath, name))
 
           const { styleSheetHash, styleSheetBody, pageBody } = await handlePage({ Page, getStaticProps, path: [...subPath, name].join('/') })
 
