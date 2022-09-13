@@ -8,6 +8,6 @@ export default async (request: Request, context: Context) => {
   if (userAgent?.includes('Deno')) {
     return Response.redirect('https://deno.land/x/pangea/init.ts')
   } else {
-    return new Response(await response.text(), response)
+    return response
   }
 }
