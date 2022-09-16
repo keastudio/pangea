@@ -27,7 +27,6 @@ const importMapJson = JSON.stringify(
     'imports': {
       '$pangea/': new URL('./', import.meta.url).href,
       'react': 'https://esm.sh/react@18.2.0?pin=v92',
-      'react-dom': 'https://esm.sh/react-dom@18.2.0?pin=v92',
       'react-dom/client': 'https://esm.sh/react-dom@18.2.0/client?pin=v92',
       'react-dom/server': 'https://esm.sh/react-dom@18.2.0/server?pin=v92'
     }
