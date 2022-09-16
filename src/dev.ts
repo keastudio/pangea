@@ -220,20 +220,9 @@ export async function dev (baseModuleUrl: string) {
   responseMap.push([
     reloadWebSocketUrl,
     async ({ request }) => {
-      let timer: number | undefined = undefined
-
       const { socket: ws, response } = Deno.upgradeWebSocket(request)
       ws.onopen = () => {
         ws.send(buildId)
-        timer = setInterval(
-          () => {
-            ws.send(buildId)
-          },
-          1000
-        )
-      }
-      ws.onclose = () => {
-        clearInterval(timer)
       }
       
       return await Promise.resolve(response)
@@ -246,20 +235,31 @@ export async function dev (baseModuleUrl: string) {
       return await Promise.resolve(
         new Response(
           `
-            (function startWebsocket() {
+            let reconnectionAttempts = 0
+          
+            function startWebsocket () {
               const connection = new WebSocket('ws://' + window.location.host + '${reloadWebSocketUrl}')
               
               connection.onmessage = event => {
-                if (event.data !== '${buildId}') { 
+                if (event.data !== '${buildId}') {
+                  connection.onclose = () => {}
                   connection.close()
                   location.reload()
                 }
               }
 
               connection.onclose = () => {
-                setTimeout(startWebsocket, 1000)
+                if (reconnectionAttempts < 10) {
+                  reconnectionAttempts++
+                  setTimeout(
+                    startWebsocket,
+                    500
+                  )
+                }
               }
-            })()
+            }
+
+            startWebsocket()
           `,
           {
             status: 200,
