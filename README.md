@@ -7,7 +7,7 @@ Features:
 - Exports static files, which can be deployed to Netlify and Vercel
 - No JavaScript is shipped to the frontend by default
 - Island architecture—only interactive React components are hydrated on the client side
-- Built in support for CSS-in-JS, which is server-side generated for performance 
+- Built in support for CSS-in-JS, which is statically generated for performance
 - Next.js inspired file-system routing
 
 ### Getting started
