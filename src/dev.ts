@@ -88,7 +88,7 @@ export async function dev (baseModuleUrl: string) {
   const servePages = async (subPath: string[]) => {
     for (const { name, isFile } of Deno.readDirSync(join(projectDir, 'pages', ...subPath))) {
       if (isFile) {
-        const cssRouteRegex = RegExp(`^/${[...subPath, name.split('.')[0]].join('/')}\\.([a-z0-9]{6})\\.css`)
+        const cssRouteRegex = RegExp(`^/${[...subPath, name.split('.')[0]].join('/')}\\.([a-z0-9]{6})\\.css$`)
   
         let styleSheetHashCached: (string | null)
         let styleSheetBodyCached: (string | null)
@@ -136,7 +136,7 @@ export async function dev (baseModuleUrl: string) {
               const substitutedPath = path.replace(
                 /\/:([a-z]+)/g,
                 (_match, capturedGroup1) => params[capturedGroup1] === ''
-                  ? ''
+                  ? '/'
                   : '/' + params[capturedGroup1].replaceAll('/', '')
               )
   
@@ -164,11 +164,6 @@ export async function dev (baseModuleUrl: string) {
                     }
                   )
                 }
-              ])
-  
-              responseMap.push([
-                substitutedPath + '/',
-                async ({ requestPrefix }: { requestPrefix: string }) => await Promise.resolve(Response.redirect(requestPrefix + substitutedPath, 302))
               ])
             }
           }
@@ -201,13 +196,6 @@ export async function dev (baseModuleUrl: string) {
               )
             }
           ])
-  
-          if (name.split('.')[0] !== 'index') {
-            responseMap.push([
-              path + '/',
-              async ({ requestPrefix }) => await Promise.resolve(Response.redirect(requestPrefix + path, 302))
-            ])
-          }
         }
       } else {
         servePages([...subPath, name])
@@ -280,9 +268,13 @@ export async function dev (baseModuleUrl: string) {
 
     const matchedRule = responseMap.find(
       ([route]) => typeof route === 'string'
-        ? route === requestPath
+        ? RegExp('^' + route.replace(/\/$/, '') + '\/?$').test(requestPath)
         : route.test(requestPath) === true
     )
+
+    if (matchedRule && typeof matchedRule[0] === 'string' && requestPath !== matchedRule[0]) {
+      return await Promise.resolve(Response.redirect(requestPrefix + matchedRule[0], 302))
+    }
   
     if (matchedRule) {
       const responseHandler = matchedRule[1]
