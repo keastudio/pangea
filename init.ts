@@ -22,10 +22,14 @@ await Deno.mkdir(join(resolvedDirectory, 'pages'), { recursive: true })
 await Deno.mkdir(join(resolvedDirectory, 'islands'), { recursive: true })
 await Deno.mkdir(join(resolvedDirectory, 'static'), { recursive: true })
 
+const pangeaUrl = new URL('./', import.meta.url).href
+
 const importMapJson = JSON.stringify(
   {
     'imports': {
-      '$pangea/': new URL('./', import.meta.url).href,
+      '$pangea/': pangeaUrl === 'https://pangea.sh/'
+        ? (await fetch('https://deno.land/x/pangea/init.ts')).url.split('/').slice(0, -1).join('/') + '/'
+        : pangeaUrl,
       'react': 'https://esm.sh/react@18.2.0?pin=v92',
       'react-dom/client': 'https://esm.sh/react-dom@18.2.0/client?pin=v92',
       'react-dom/server': 'https://esm.sh/react-dom@18.2.0/server?pin=v92'

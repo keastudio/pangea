@@ -261,8 +261,6 @@ export async function dev (baseModuleUrl: string) {
     }
   ])
 
-  console.log(responseMap)
-
   const handler = async (request: Request) => {
     const requestPrefix = new URL(request.url).origin
   
