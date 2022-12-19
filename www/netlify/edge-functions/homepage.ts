@@ -3,8 +3,6 @@ import type { Context } from 'https://edge.netlify.com'
 export default async (request: Request, context: Context) => {
   const userAgent = request.headers.get('user-agent')
 
-  const response = await context.next()
-
   if (userAgent?.includes('Deno')) {    
     const response = await fetch('https://deno.land/x/pangea/init.ts')
 
@@ -12,10 +10,10 @@ export default async (request: Request, context: Context) => {
       console.error(response.status)
     }
 
-    const text = await response.text()
-
-    return context.json(text)
+    return response
   } else {
+    const response = await context.next()
+
     return response
   }
 }
