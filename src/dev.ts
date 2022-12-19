@@ -88,7 +88,7 @@ export async function dev (baseModuleUrl: string) {
   const servePages = async (subPath: string[]) => {
     for (const { name, isFile } of Deno.readDirSync(join(projectDir, 'pages', ...subPath))) {
       if (isFile) {
-        const cssRouteRegex = RegExp(`^/${[...subPath, name.split('.')[0]].join('/')}\\.([a-z0-9]{6})\\.css$`)
+        const cssRouteRegex = RegExp(`^/${encodeURI([...subPath, name.split('.')[0]].join('/'))}\\.([a-z0-9]{6})\\.css$`)
   
         let styleSheetHashCached: (string | null)
         let styleSheetBodyCached: (string | null)
@@ -123,7 +123,7 @@ export async function dev (baseModuleUrl: string) {
           }
         ])
   
-        const dynamicParameterRegex = /:([a-z]+)/g
+        const dynamicParameterRegex = /\[([a-z]+)\]/g
   
         if (dynamicParameterRegex.test(name)) {
           const { default: Page, getStaticProps, getStaticPaths } = await import('file://' + join(projectDir, 'pages', ...subPath, name))
@@ -134,7 +134,7 @@ export async function dev (baseModuleUrl: string) {
               const path = '/' + [...subPath, name.split('.')[0]].join('/')
   
               const substitutedPath = path.replace(
-                /\/:([a-z]+)/g,
+                /\/\[([a-z]+)\]/g,
                 (_match, capturedGroup1) => params[capturedGroup1] === ''
                   ? '/'
                   : '/' + params[capturedGroup1].replaceAll('/', '')
@@ -260,6 +260,8 @@ export async function dev (baseModuleUrl: string) {
       )
     }
   ])
+
+  console.log(responseMap)
 
   const handler = async (request: Request) => {
     const requestPrefix = new URL(request.url).origin

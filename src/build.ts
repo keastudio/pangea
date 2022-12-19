@@ -60,7 +60,7 @@ export async function build (baseModuleUrl: string) {
   const outputPages = async (subPath: string[]) => {
     for (const { name, isFile } of Deno.readDirSync(join(projectDir, 'pages', ...subPath))) {
       if (isFile) {
-        const dynamicParameterRegex = /:([a-z]+)/g
+        const dynamicParameterRegex = /\[([a-z]+)\]/g
 
         if (dynamicParameterRegex.test(name)) {
           const { default: Page, getStaticProps, getStaticPaths } = await import('file://' + join(projectDir, 'pages', ...subPath, name))

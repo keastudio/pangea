@@ -124,7 +124,7 @@ const handlePage = async ({ Page, getStaticProps, path, params, reloadScriptSrc 
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 ${styleSheet
-  ? `<link rel="stylesheet" href="${`/${path.split('.')[0]}.${styleSheetHash}.css`}">`
+  ? `<link rel="stylesheet" href="${`/${encodeURI(path.split('.')[0])}.${styleSheetHash}.css`}">`
   : ''}
 
 ${headNodes !== null
