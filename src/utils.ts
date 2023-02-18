@@ -1,4 +1,4 @@
-import { build, transform, Plugin } from 'https://deno.land/x/esbuild@v0.14.51/mod.js'
+import { build, transform, Plugin } from 'https://deno.land/x/esbuild@v0.14.51/wasm.js'
 import { denoPlugin } from 'https://deno.land/x/esbuild_deno_loader@0.5.2/mod.ts'
 import globalExternals from 'https://esm.sh/@fal-works/esbuild-plugin-global-externals@2.1.2?pin=v92'
 
