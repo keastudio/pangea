@@ -1,4 +1,4 @@
-import { stop, transform } from 'https://deno.land/x/esbuild@v0.14.51/wasm.js'
+import { stop, transform } from 'https://deno.land/x/esbuild@v0.14.51/mod.js'
 import { emptyDir, walk, existsSync } from 'https://deno.land/std@0.152.0/fs/mod.ts'
 import { dirname, fromFileUrl, join } from 'https://deno.land/std@0.150.0/path/mod.ts'
 
