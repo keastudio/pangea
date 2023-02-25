@@ -12,12 +12,9 @@ import { join } from 'https://deno.land/std@0.150.0/path/mod.ts'
 
 import { build, transform, Plugin } from 'esbuild'
 
-import TypedLocalStore, { MemoryStorage } from 'https://deno.land/x/typed_local_store@v2.0.2/mod.ts'
+import { MemoryStorage } from 'https://deno.land/x/typed_local_store@v2.0.2/mod.ts'
 
-const memoryStorage = new MemoryStorage()
-const typedStorage = new TypedLocalStore<Record<string, unknown>>({
-  fallbackStorage: memoryStorage
-})
+const typedStorage = new MemoryStorage()
 
 const generateStyleSheetHash = async (text: string) => {
   const encoder = new TextEncoder()
