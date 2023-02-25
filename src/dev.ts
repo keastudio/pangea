@@ -49,7 +49,7 @@ export async function dev (baseModuleUrl: string) {
         responseMap.push([
           '/' + basename(path).split('.')[0] + '.js',
           async () => {
-            const responseBody = await generateIslandFile({ path })
+            const responseBody = await generateIslandFile(path)
   
             return new Response(
               responseBody,

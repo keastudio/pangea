@@ -10,6 +10,8 @@ import nested from 'https://esm.sh/postcss-nested@5.0.6?pin=v92&bundle'
 import { existsSync } from 'https://deno.land/std@0.152.0/fs/mod.ts'
 import { join } from 'https://deno.land/std@0.150.0/path/mod.ts'
 
+import { build, transform, Plugin } from 'esbuild'
+
 const generateStyleSheetHash = async (text: string) => {
   const encoder = new TextEncoder()
   const encodedText = encoder.encode(text)
@@ -25,13 +27,7 @@ const generateStyleSheetHash = async (text: string) => {
     .substring(0, 6)
 }
 
-const generateIslandFile = async ({ path, useEsbuildWasm = false }: { path: string, useEsbuildWasm?: false }) => {
-  const { build } = await import(
-    useEsbuildWasm
-      ? 'https://deno.land/x/esbuild@v0.14.51/wasm.js'
-      : 'https://deno.land/x/esbuild@v0.14.51/mod.js'
-  )
-
+const generateIslandFile = async (path: string) => {
   const { outputFiles } = await build({
     bundle: true,
     entryPoints: [path],
@@ -52,13 +48,7 @@ const generateIslandFile = async ({ path, useEsbuildWasm = false }: { path: stri
   return `import{React}from'./shared.js';${outputFiles[0].text}`
 }
 
-const generateSharedDependenciesFile = async ({ projectDir, useEsbuildWasm = false }: { projectDir: string, useEsbuildWasm?: boolean }) => {
-  const { build } = await import(
-    useEsbuildWasm
-      ? 'https://deno.land/x/esbuild@v0.14.51/wasm.js'
-      : 'https://deno.land/x/esbuild@v0.14.51/mod.js'
-  )
-
+const generateSharedDependenciesFile = async ({ projectDir }: { projectDir: string }) => {
   const sharedTemporaryFile = Deno.makeTempFileSync({ suffix: '.js' })
 
   await Deno.writeTextFile(
@@ -101,17 +91,10 @@ type handlePageArgs = {
   path: string,
   params?: Record<string, unknown>,
   reloadScriptSrc?: string,
-  useEsbuildWasm?: boolean,
   inlineCss?: boolean
 }
 
-const handlePage = async ({ Page, getStaticProps, path, params, reloadScriptSrc, useEsbuildWasm = false, inlineCss = false }: handlePageArgs) => {
-  const { transform } = await import(
-    useEsbuildWasm
-      ? 'https://deno.land/x/esbuild@v0.14.51/wasm.js'
-      : 'https://deno.land/x/esbuild@v0.14.51/mod.js'
-  )
-
+const handlePage = async ({ Page, getStaticProps, path, params, reloadScriptSrc, inlineCss = false }: handlePageArgs) => {
   sessionStorage.removeItem('styleSheet')
   sessionStorage.removeItem('headNodes')
   sessionStorage.removeItem('hydrationScripts')
