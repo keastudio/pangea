@@ -10,6 +10,9 @@ import nested from 'https://esm.sh/postcss-nested@5.0.6?pin=v92&bundle'
 import { existsSync } from 'https://deno.land/std@0.152.0/fs/mod.ts'
 import { join } from 'https://deno.land/std@0.150.0/path/mod.ts'
 
+import { build as buildWasm, transform as transformWasm } from 'https://deno.land/x/esbuild@v0.14.51/wasm.js'
+import { build as buildNative, transform as transformNative } from 'https://deno.land/x/esbuild@v0.14.51/mod.js'
+
 const generateStyleSheetHash = async (text: string) => {
   const encoder = new TextEncoder()
   const encodedText = encoder.encode(text)
@@ -26,11 +29,9 @@ const generateStyleSheetHash = async (text: string) => {
 }
 
 const generateIslandFile = async ({ path, useEsbuildWasm = false }: { path: string, useEsbuildWasm?: false }) => {
-  const { build } = await import(
-    useEsbuildWasm
-      ? 'https://deno.land/x/esbuild@v0.14.51/wasm.js'
-      : 'https://deno.land/x/esbuild@v0.14.51/mod.js'
-  )
+  const build = useEsbuildWasm
+    ? buildWasm
+    : buildNative
 
   const { outputFiles } = await build({
     bundle: true,
@@ -53,11 +54,9 @@ const generateIslandFile = async ({ path, useEsbuildWasm = false }: { path: stri
 }
 
 const generateSharedDependenciesFile = async ({ projectDir, useEsbuildWasm = false }: { projectDir: string, useEsbuildWasm?: boolean }) => {
-  const { build } = await import(
-    useEsbuildWasm
-      ? 'https://deno.land/x/esbuild@v0.14.51/wasm.js'
-      : 'https://deno.land/x/esbuild@v0.14.51/mod.js'
-  )
+  const build = useEsbuildWasm
+    ? buildWasm
+    : buildNative
 
   const sharedTemporaryFile = Deno.makeTempFileSync({ suffix: '.js' })
 
@@ -106,11 +105,9 @@ type handlePageArgs = {
 }
 
 const handlePage = async ({ Page, getStaticProps, path, params, reloadScriptSrc, useEsbuildWasm = false, inlineCss = false }: handlePageArgs) => {
-  const { transform } = await import(
-    useEsbuildWasm
-      ? 'https://deno.land/x/esbuild@v0.14.51/wasm.js'
-      : 'https://deno.land/x/esbuild@v0.14.51/mod.js'
-  )
+  const transform = useEsbuildWasm
+    ? transformWasm
+    : transformNative
 
   sessionStorage.removeItem('styleSheet')
   sessionStorage.removeItem('headNodes')
