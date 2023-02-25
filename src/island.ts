@@ -44,10 +44,17 @@ function Island ({ path, app, data }: { path: string, app: (React.FunctionCompon
       }
     )
   } else {
-    Deno.writeTextFileSync(
-      'dist/' + hydrateIslandFilename,
-      scriptBody
-    )
+    try {
+      Deno.writeTextFileSync(
+        'dist/' + hydrateIslandFilename,
+        scriptBody
+      )
+    } catch (error) {
+      if (!(error instanceof Deno.errors.PermissionDenied)) {
+        throw error
+      }
+      // Do nothing
+    }
   }
 
   const existingHydrationScripts = typedStorage.getItem('hydrationScripts') || ''
