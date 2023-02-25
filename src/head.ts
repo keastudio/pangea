@@ -2,10 +2,12 @@ import { Fragment, createElement } from 'react'
 import type { ReactNode } from 'react'
 import ReactDOMServer from 'react-dom/server'
 
-function Head ({ children }: { children: (ReactNode | ReactNode[]) }) {
-  const headNodes = sessionStorage.getItem('headNodes') || ''
+import { typedStorage } from './utils.ts'
 
-  sessionStorage.setItem(
+function Head ({ children }: { children: (ReactNode | ReactNode[]) }) {
+  const headNodes = typedStorage.getItem('headNodes') || ''
+
+  typedStorage.setItem(
     'headNodes',
     headNodes + ReactDOMServer.renderToStaticMarkup(
       createElement(

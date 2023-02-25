@@ -1,3 +1,5 @@
+import { typedStorage } from './utils.ts'
+
 function hash (str: string) {
   let h = 0
   let k; let i = 0; let len = str.length
@@ -38,9 +40,9 @@ function css (templateStringArray: TemplateStringsArray, ...templateArgs: (strin
   const styleSheetBody = `.${cssClassName} {\n${cssRules}\n}\n`
 
   if ('Deno' in window) {
-    sessionStorage.setItem(
+    typedStorage.setItem(
       'styleSheet',
-      (sessionStorage.getItem('styleSheet') || '') + styleSheetBody
+      (typedStorage.getItem('styleSheet') || '') + styleSheetBody
     )
   }
 
