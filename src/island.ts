@@ -5,6 +5,8 @@ import ReactDOMServer from 'react-dom/server'
 import { createHash } from 'https://deno.land/std@0.152.0/hash/mod.ts'
 import { existsSync } from 'https://deno.land/std@0.152.0/fs/mod.ts'
 
+import { typedStorage } from './utils.ts'
+
 // deno-lint-ignore no-explicit-any
 function Island ({ path, app, data }: { path: string, app: (React.FunctionComponent<any> | React.ComponentClass<any, any>), data: Record<string, unknown> }) {
   const devServerHandler = window.devServerHandler
@@ -53,9 +55,9 @@ function Island ({ path, app, data }: { path: string, app: (React.FunctionCompon
     )
   }
 
-  const existingHydrationScripts = sessionStorage.getItem('hydrationScripts') || ''
+  const existingHydrationScripts = typedStorage.getItem('hydrationScripts') || ''
 
-  sessionStorage.setItem(
+  typedStorage.setItem(
     'hydrationScripts',
     existingHydrationScripts + '<script type="module" src="/' + hydrateIslandFilename + '"></script>'
   )

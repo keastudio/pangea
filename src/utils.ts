@@ -12,6 +12,13 @@ import { join } from 'https://deno.land/std@0.150.0/path/mod.ts'
 
 import { build, transform, Plugin } from 'esbuild'
 
+import TypedLocalStore, { MemoryStorage } from 'https://deno.land/x/typed_local_store@v2.0.2/mod.ts'
+
+const memoryStorage = new MemoryStorage()
+const typedStorage = new TypedLocalStore<Record<string, unknown>>({
+  fallbackStorage: memoryStorage
+})
+
 const generateStyleSheetHash = async (text: string) => {
   const encoder = new TextEncoder()
   const encodedText = encoder.encode(text)
@@ -95,9 +102,9 @@ type handlePageArgs = {
 }
 
 const handlePage = async ({ Page, getStaticProps, path, params, reloadScriptSrc, inlineCss = false }: handlePageArgs) => {
-  sessionStorage.removeItem('styleSheet')
-  sessionStorage.removeItem('headNodes')
-  sessionStorage.removeItem('hydrationScripts')
+  typedStorage.removeItem('styleSheet')
+  typedStorage.removeItem('headNodes')
+  typedStorage.removeItem('hydrationScripts')
 
   const { props: pageProps } = getStaticProps !== undefined
     ? await getStaticProps({ params })
@@ -107,9 +114,9 @@ const handlePage = async ({ Page, getStaticProps, path, params, reloadScriptSrc,
     Page({ ...pageProps })
   )
 
-  const styleSheet = sessionStorage.getItem('styleSheet')
+  const styleSheet = typedStorage.getItem('styleSheet')
 
-  const headNodes = sessionStorage.getItem('headNodes')
+  const headNodes = typedStorage.getItem('headNodes')
 
   const styleSheetBody = styleSheet && await transform(
     postcss([<AcceptedPlugin>nested])
@@ -137,8 +144,8 @@ ${headNodes !== null
   ? headNodes
   : ''}
 
-${sessionStorage.getItem('hydrationScripts') !== null
-  ? sessionStorage.getItem('hydrationScripts')
+${typedStorage.getItem('hydrationScripts') !== null
+  ? typedStorage.getItem('hydrationScripts')
   : ''}
 
 ${reloadScriptSrc
@@ -154,4 +161,4 @@ ${pageMarkup}
   return { styleSheetHash, styleSheetBody, pageBody, response: null }
 }
 
-export { generateIslandFile, generateSharedDependenciesFile, handlePage }
+export { generateIslandFile, generateSharedDependenciesFile, handlePage, typedStorage }
