@@ -4,7 +4,7 @@ import postcss from 'https://deno.land/x/postcss@8.4.16/mod.js'
 import type { AcceptedPlugin } from 'https://deno.land/x/postcss@8.4.16/lib/postcss.d.ts'
 import nested from 'https://esm.sh/postcss-nested@5.0.6?pin=v92&bundle'
 
-import { transform, initialize, stop } from 'esbuild'
+import { transform, initialize } from 'esbuild'
 
 import { memoryStorage } from './memoryStorage.ts'
 
@@ -33,24 +33,32 @@ type handlePageArgs = {
   netlifyEdge?: boolean
 }
 
+let esbuildInitialized: boolean | Promise<void> = false
+
+const ensureEsbuildInitialized = async () => {
+  if (esbuildInitialized === false) {
+    if (Deno.run === undefined) {
+      esbuildInitialized = initialize({
+        wasmURL: 'https://deno.land/x/esbuild@v0.17.10/esbuild.wasm',
+        worker: false
+      })
+    } else {
+      initialize({})
+    }
+    await esbuildInitialized
+    esbuildInitialized = true
+  } else if (esbuildInitialized instanceof Promise) {
+    await esbuildInitialized
+  }
+}
+
 const handlePage = async ({ Page, getStaticProps, path, params, reloadScriptSrc, inlineCss = false, netlifyEdge = false }: handlePageArgs) => {                                                                                                                                                                                           
   memoryStorage.removeItem('styleSheet')
   memoryStorage.removeItem('headNodes')
   memoryStorage.removeItem('hydrationScripts')
   memoryStorage.removeItem('netlifyEdge')
 
-  if (netlifyEdge && memoryStorage.getItem('esbuildIsInitialized') !== 'true') {
-    memoryStorage.setItem('netlifyEdge', 'true')
-    await initialize({
-      worker: false,
-      wasmURL: 'https://deno.land/x/esbuild@v0.17.10/esbuild.wasm'
-    })
-      .then(
-        () => {
-          memoryStorage.setItem('esbuildIsInitialized', 'true')
-        }
-      )
-  }
+  await ensureEsbuildInitialized()
 
   const { props: pageProps } = getStaticProps !== undefined
     ? await getStaticProps({ params })
