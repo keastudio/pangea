@@ -39,12 +39,17 @@ const handlePage = async ({ Page, getStaticProps, path, params, reloadScriptSrc,
   memoryStorage.removeItem('hydrationScripts')
   memoryStorage.removeItem('netlifyEdge')
 
-  if (netlifyEdge) {
+  if (netlifyEdge && memoryStorage.getItem('esbuildIsInitialized') !== 'true') {
     memoryStorage.setItem('netlifyEdge', 'true')
     await initialize({
       worker: false,
       wasmURL: 'https://deno.land/x/esbuild@v0.17.10/esbuild.wasm'
     })
+      .then(
+        () => {
+          memoryStorage.setItem('esbuildIsInitialized', 'true')
+        }
+      )
   }
 
   const { props: pageProps } = getStaticProps !== undefined
@@ -66,10 +71,6 @@ const handlePage = async ({ Page, getStaticProps, path, params, reloadScriptSrc,
     { loader: 'css', minify: true })
     .then(({ code }) => code)
   const styleSheetHash = styleSheetBody && await generateStyleSheetHash(styleSheetBody)
-
-  if (netlifyEdge) {
-    stop()
-  }
 
   const pageBody = `<!DOCTYPE html>
 <html lang="en">
