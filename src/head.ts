@@ -2,12 +2,12 @@ import { Fragment, createElement } from 'react'
 import type { ReactNode } from 'react'
 import ReactDOMServer from 'react-dom/server'
 
-import { typedStorage } from './utils.ts'
+import { memoryStorage } from './utils/memoryStorage.ts'
 
 function Head ({ children }: { children: (ReactNode | ReactNode[]) }) {
-  const headNodes = typedStorage.getItem('headNodes') || ''
+  const headNodes = memoryStorage.getItem('headNodes') || ''
 
-  typedStorage.setItem(
+  memoryStorage.setItem(
     'headNodes',
     headNodes + ReactDOMServer.renderToStaticMarkup(
       createElement(
