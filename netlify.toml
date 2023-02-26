@@ -8,3 +8,8 @@
 [[edge_functions]]
   path = "/"
   function = "homepage"
+
+[[headers]]
+  for = "/*.ts"
+  [headers.values]
+    Content-Type = "application/typescript; charset=utf-8"
