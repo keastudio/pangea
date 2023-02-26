@@ -3,7 +3,7 @@
 
   publish = "dist/"
 
-  command = "curl -fsSL https://cdn.deno.land/install/versions/v0.1.6/raw/install.sh | sh && export PATH=\"/opt/buildhome/.deno/bin:$PATH\" && deno task build"
+  command = "curl -fsSL https://cdn.deno.land/install/versions/v0.1.7/raw/install.sh | sh && export PATH=\"/opt/buildhome/.deno/bin:$PATH\" && deno task build && && cp -r ../src ../*.ts ./dist"
 
 [[edge_functions]]
   path = "/"
