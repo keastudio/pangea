@@ -2,7 +2,9 @@ import { stop, transform } from 'esbuild'
 import { emptyDir, walk, existsSync } from 'https://deno.land/std@0.152.0/fs/mod.ts'
 import { dirname, fromFileUrl, join } from 'https://deno.land/std@0.150.0/path/mod.ts'
 
-import { generateIslandFile, generateSharedDependenciesFile, handlePage } from './utils.ts'
+import { generateIslandFile } from './utils/generateIslandFile.ts'
+import { generateSharedDependenciesFile } from './utils/generateSharedDependenciesFile.ts'
+import { handlePage } from './utils/handlePage.ts'
 
 export async function build (baseModuleUrl: string) {
   const baseDir = dirname(fromFileUrl(baseModuleUrl))

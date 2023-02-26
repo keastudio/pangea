@@ -1,11 +1,11 @@
 import { serve as serveHttp } from 'https://deno.land/std@0.152.0/http/server.ts'
-
 import { existsSync } from 'https://deno.land/std@0.152.0/fs/mod.ts'
-
-import { generateIslandFile, generateSharedDependenciesFile, handlePage } from './utils.ts'
 import { dirname, basename, fromFileUrl, join } from 'https://deno.land/std@0.150.0/path/mod.ts'
-
 import { lookup } from 'https://deno.land/x/mrmime@v1.0.0/mod.ts'
+
+import { generateIslandFile } from './utils/generateIslandFile.ts'
+import { generateSharedDependenciesFile } from './utils/generateSharedDependenciesFile.ts'
+import { handlePage } from './utils/handlePage.ts'
 
 export type routeType = (string | RegExp)
 export type responseHandlerType = ({ requestPrefix, requestPath, request }: { requestPrefix: string, requestPath: string, request: Request }) => Promise<Response>

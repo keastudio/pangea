@@ -1,4 +1,4 @@
-import { typedStorage } from './utils.ts'
+import { memoryStorage } from './utils/memoryStorage.ts'
 
 function hash (str: string) {
   let h = 0
@@ -40,9 +40,9 @@ function css (templateStringArray: TemplateStringsArray, ...templateArgs: (strin
   const styleSheetBody = `.${cssClassName} {\n${cssRules}\n}\n`
 
   if ('Deno' in window) {
-    typedStorage.setItem(
+    memoryStorage.setItem(
       'styleSheet',
-      (typedStorage.getItem('styleSheet') || '') + styleSheetBody
+      (memoryStorage.getItem('styleSheet') || '') + styleSheetBody
     )
   }
 
