@@ -43,7 +43,7 @@ const handlePage = async ({ Page, getStaticProps, path, params, reloadScriptSrc,
     memoryStorage.setItem('netlifyEdge', 'true')
     initialize({
       worker: false,
-      wasmURL: 'https://deno.land/x/esbuild@v0.17.10/wasm.js'
+      wasmURL: 'https://deno.land/x/esbuild@v0.17.10/esbuild.wasm'
     })
   }
 
