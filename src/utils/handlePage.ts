@@ -29,13 +29,19 @@ type handlePageArgs = {
   path: string,
   params?: Record<string, unknown>,
   reloadScriptSrc?: string,
-  inlineCss?: boolean
+  inlineCss?: boolean,
+  netlifyEdge?: boolean
 }
 
-const handlePage = async ({ Page, getStaticProps, path, params, reloadScriptSrc, inlineCss = false }: handlePageArgs) => {
+const handlePage = async ({ Page, getStaticProps, path, params, reloadScriptSrc, inlineCss = false, netlifyEdge = false }: handlePageArgs) => {
   memoryStorage.removeItem('styleSheet')
   memoryStorage.removeItem('headNodes')
   memoryStorage.removeItem('hydrationScripts')
+  memoryStorage.removeItem('netlifyEdge')
+
+  if (netlifyEdge) {
+    memoryStorage.setItem('netlifyEdge', 'true')
+  }
 
   const { props: pageProps } = getStaticProps !== undefined
     ? await getStaticProps({ params })

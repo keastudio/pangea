@@ -18,49 +18,55 @@ function Island ({ path, app, data }: { path: string, app: (React.FunctionCompon
   const islandFilename = path.split('/').slice(-1)[0].split('.')[0] + '_' + createHash('md5').update(JSON.stringify(data)) + '.js'
   const hydrateIslandFilename = 'hydrate-' + islandFilename
 
-  const scriptBody = `
-    import { React, ReactDOMClient, ${existsSync('./src/store.ts') ? 'globalStore' : ''} } from './shared.js'
-    import App from './${path.split('/').slice(-1)[0].split('.')[0] + '.js'}'
+  // Check if running within netlify edge handler, so this code doesnt evaluate
+  const netlifyEdge = memoryStorage.getItem('netlifyEdge')
 
-    ReactDOMClient.hydrateRoot(
-      document.querySelector('#${islandFilename.split('.')[0]}'),
-      React.createElement(
-        App,
-        { ...JSON.parse(\`${JSON.stringify(data)}\`), ${existsSync('./src/store.ts') ? 'globalStore' : ''} }
-      )
-    )
-  `
+  if (netlifyEdge !== 'true') {
+    const scriptBody = `
+      import { React, ReactDOMClient, ${existsSync('./src/store.ts') ? 'globalStore' : ''} } from './shared.js'
+      import App from './${path.split('/').slice(-1)[0].split('.')[0] + '.js'}'
 
-  if (devServerHandler) {
-    devServerHandler(
-      '/' + hydrateIslandFilename,
-      async () => {
-        return await Promise.resolve(
-          new Response(
-            scriptBody,
-            {
-              status: 200,
-              headers: new Headers({
-                'content-type': 'application/javascript; charset=UTF-8'
-              })
-            }
-          )
+      ReactDOMClient.hydrateRoot(
+        document.querySelector('#${islandFilename.split('.')[0]}'),
+        React.createElement(
+          App,
+          { ...JSON.parse(\`${JSON.stringify(data)}\`), ${existsSync('./src/store.ts') ? 'globalStore' : ''} }
         )
-      }
-    )
-  } else {
-    try {
-      Deno.writeTextFileSync(
-        'dist/' + hydrateIslandFilename,
-        scriptBody
       )
-    } catch (error) {
-      if (!(error instanceof Deno.errors.PermissionDenied)) {
-        throw error
+    `
+
+    if (devServerHandler) {
+      devServerHandler(
+        '/' + hydrateIslandFilename,
+        async () => {
+          return await Promise.resolve(
+            new Response(
+              scriptBody,
+              {
+                status: 200,
+                headers: new Headers({
+                  'content-type': 'application/javascript; charset=UTF-8'
+                })
+              }
+            )
+          )
+        }
+      )
+    } else {
+      try {
+        Deno.writeTextFileSync(
+          'dist/' + hydrateIslandFilename,
+          scriptBody
+        )
+      } catch (error) {
+        if (!(error instanceof Deno.errors.PermissionDenied)) {
+          throw error
+        }
+        // Do nothing
       }
-      // Do nothing
     }
   }
+
 
   const existingHydrationScripts = memoryStorage.getItem('hydrationScripts') || ''
 
