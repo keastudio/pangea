@@ -4,7 +4,7 @@ import postcss from 'https://deno.land/x/postcss@8.4.16/mod.js'
 import type { AcceptedPlugin } from 'https://deno.land/x/postcss@8.4.16/lib/postcss.d.ts'
 import nested from 'https://esm.sh/postcss-nested@5.0.6?pin=v92&bundle'
 
-import { transform } from 'esbuild'
+import { transform, initialize } from 'esbuild'
 
 import { memoryStorage } from './memoryStorage.ts'
 
@@ -33,7 +33,7 @@ type handlePageArgs = {
   netlifyEdge?: boolean
 }
 
-const handlePage = async ({ Page, getStaticProps, path, params, reloadScriptSrc, inlineCss = false, netlifyEdge = false }: handlePageArgs) => {
+const handlePage = async ({ Page, getStaticProps, path, params, reloadScriptSrc, inlineCss = false, netlifyEdge = false }: handlePageArgs) => {                                                                                                                                                                                           
   memoryStorage.removeItem('styleSheet')
   memoryStorage.removeItem('headNodes')
   memoryStorage.removeItem('hydrationScripts')
@@ -41,6 +41,10 @@ const handlePage = async ({ Page, getStaticProps, path, params, reloadScriptSrc,
 
   if (netlifyEdge) {
     memoryStorage.setItem('netlifyEdge', 'true')
+    initialize({
+      worker: false,
+      wasmURL: 'https://deno.land/x/esbuild@v0.17.10/wasm.js'
+    })
   }
 
   const { props: pageProps } = getStaticProps !== undefined
