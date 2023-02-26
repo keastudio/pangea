@@ -18,10 +18,7 @@ function Island ({ path, app, data }: { path: string, app: (React.FunctionCompon
   const islandFilename = path.split('/').slice(-1)[0].split('.')[0] + '_' + createHash('md5').update(JSON.stringify(data)) + '.js'
   const hydrateIslandFilename = 'hydrate-' + islandFilename
 
-  // Check if running within netlify edge handler, so this code doesnt evaluate
-  const netlifyEdge = memoryStorage.getItem('netlifyEdge')
-
-  if (netlifyEdge !== 'true') {
+  if (Deno.run !== undefined) {
     const scriptBody = `
       import { React, ReactDOMClient, ${existsSync('./src/store.ts') ? 'globalStore' : ''} } from './shared.js'
       import App from './${path.split('/').slice(-1)[0].split('.')[0] + '.js'}'

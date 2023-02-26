@@ -52,11 +52,10 @@ const ensureEsbuildInitialized = async () => {
   }
 }
 
-const handlePage = async ({ Page, getStaticProps, path, params, reloadScriptSrc, inlineCss = false, netlifyEdge = false }: handlePageArgs) => {                                                                                                                                                                                           
+const handlePage = async ({ Page, getStaticProps, path, params, reloadScriptSrc, inlineCss = false }: handlePageArgs) => {                                                                                                                                                                                           
   memoryStorage.removeItem('styleSheet')
   memoryStorage.removeItem('headNodes')
   memoryStorage.removeItem('hydrationScripts')
-  memoryStorage.removeItem('netlifyEdge')
 
   await ensureEsbuildInitialized()
 
