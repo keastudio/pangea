@@ -1,5 +1,6 @@
 import { denoPlugin } from 'https://deno.land/x/esbuild_deno_loader@0.5.2/mod.ts'
-
+import { existsSync } from 'https://deno.land/std@0.152.0/fs/mod.ts'
+import { join } from 'https://deno.land/std@0.150.0/path/mod.ts'
 
 import { build } from 'esbuild'
 
@@ -12,7 +13,15 @@ const generateSharedDependenciesFile = async ({ projectDir }: { projectDir: stri
       import React from 'react'
       import ReactDOMClient from 'react-dom/client'
 
-      export { React, ReactDOMClient }
+      ${existsSync(join(projectDir, 'store.ts'))
+        ? `
+          import { globalStore } from '${Deno.cwd()}/src/store.ts'
+
+          export { React, ReactDOMClient, globalStore }
+        `
+        : `
+          export { React, ReactDOMClient }
+        `}
     `
   )
 
