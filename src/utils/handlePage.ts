@@ -8,6 +8,8 @@ import { transform, initialize } from 'esbuild'
 
 import { memoryStorage } from './memoryStorage.ts'
 
+import type { Context } from 'https://edge.netlify.com'
+
 const generateStyleSheetHash = async (text: string) => {
   const encoder = new TextEncoder()
   const encodedText = encoder.encode(text)
@@ -25,12 +27,13 @@ const generateStyleSheetHash = async (text: string) => {
 
 type handlePageArgs = {
   Page: (props: Record<string, unknown>) => JSX.Element,
-  getStaticProps: ({ params }: { params: Record<string, unknown> | undefined }) => ({ props: Record<string, unknown> }),
+  getStaticProps: ({ params, cookies }: { params: Record<string, unknown> | undefined, cookies?: Context['cookies'] }) => ({ props: Record<string, unknown> }),
   path: string,
   params?: Record<string, unknown>,
   reloadScriptSrc?: string,
   inlineCss?: boolean,
-  netlifyEdge?: boolean
+  netlifyEdge?: boolean,
+  cookies?: Context['cookies']
 }
 
 let esbuildInitialized: boolean | Promise<void> = false
@@ -52,7 +55,7 @@ const ensureEsbuildInitialized = async () => {
   }
 }
 
-const handlePage = async ({ Page, getStaticProps, path, params, reloadScriptSrc, inlineCss = false }: handlePageArgs) => {                                                                                                                                                                                           
+const handlePage = async ({ Page, getStaticProps, path, params, reloadScriptSrc, inlineCss = false, cookies }: handlePageArgs) => {                                                                                                                                                                                           
   memoryStorage.removeItem('styleSheet')
   memoryStorage.removeItem('headNodes')
   memoryStorage.removeItem('hydrationScripts')
@@ -60,7 +63,7 @@ const handlePage = async ({ Page, getStaticProps, path, params, reloadScriptSrc,
   await ensureEsbuildInitialized()
 
   const { props: pageProps } = getStaticProps !== undefined
-    ? await getStaticProps({ params })
+    ? await getStaticProps({ params, cookies })
     : { props: {} }
 
   const pageMarkup = ReactDOMServer.renderToStaticMarkup(
