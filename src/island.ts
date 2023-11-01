@@ -11,8 +11,8 @@ import { memoryStorage } from './utils/memoryStorage.ts'
 function Island ({ path, app, data }: { path: string, app: (React.FunctionComponent<any> | React.ComponentClass<any, any>), data: Record<string, unknown> }) {
   const devServerHandler = window.devServerHandler
 
-  if ('globalStore' in data) {
-    throw new Error(`The data prop for the Island component contained the property "globalStore" (for path "${path}"). This should not be included, becuase the framework handles passing this to the frontend.`)
+  if (existsSync('./src/store.ts') && !('globalStore' in data)) {
+    console.log(`You have a "./src/store.ts" file, so you must pass the globalStore property within the data to the Island component ("${path}"), if you want to access globalStore within the component`)
   }
 
   const islandFilename = path.split('/').slice(-1)[0].split('.')[0] + '_' + createHash('md5').update(JSON.stringify(data)) + '.js'
