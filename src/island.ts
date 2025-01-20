@@ -9,7 +9,7 @@ import { memoryStorage } from './utils/memoryStorage.ts'
 
 // deno-lint-ignore no-explicit-any
 function Island ({ path, app, data }: { path: string, app: (React.FunctionComponent<any> | React.ComponentClass<any, any>), data: Record<string, unknown> }) {
-  const devServerHandler = window.devServerHandler
+  const devServerHandler = globalThis.devServerHandler
 
   if (existsSync('./src/store.ts') && !('globalStore' in data)) {
     console.log(`You have a "./src/store.ts" file, so you must pass the globalStore property within the data to the Island component ("${path}"), if you want to access globalStore within the component`)
@@ -18,7 +18,7 @@ function Island ({ path, app, data }: { path: string, app: (React.FunctionCompon
   const islandFilename = path.split('/').slice(-1)[0].split('.')[0] + '_' + createHash('md5').update(JSON.stringify(data)) + '.js'
   const hydrateIslandFilename = 'hydrate-' + islandFilename
 
-  if (Deno.run !== undefined) {
+  if ('devServerHandler' in globalThis) {
     const scriptBody = `
       import { React, ReactDOMClient, ${existsSync('./src/store.ts') ? 'globalStore' : ''} } from './shared.js'
       import App from './${path.split('/').slice(-1)[0].split('.')[0] + '.js'}'

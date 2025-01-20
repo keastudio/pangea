@@ -39,7 +39,7 @@ function css (templateStringArray: TemplateStringsArray, ...templateArgs: (strin
 
   const styleSheetBody = `.${cssClassName} {\n${cssRules}\n}\n`
 
-  if ('Deno' in window) {
+  if ('Deno' in globalThis) {
     memoryStorage.setItem(
       'styleSheet',
       (memoryStorage.getItem('styleSheet') || '') + styleSheetBody

@@ -40,7 +40,8 @@ let esbuildInitialized: boolean | Promise<void> = false
 
 const ensureEsbuildInitialized = async () => {
   if (esbuildInitialized === false) {
-    if (Deno.run === undefined) {
+    const runPermissionStatus = await Deno.permissions.query({ name: 'run' })
+    if (runPermissionStatus.state !== 'granted') {
       esbuildInitialized = initialize({
         wasmURL: 'https://deno.land/x/esbuild@v0.17.10/esbuild.wasm',
         worker: false
@@ -55,7 +56,7 @@ const ensureEsbuildInitialized = async () => {
   }
 }
 
-const handlePage = async ({ Page, getStaticProps, path, params, reloadScriptSrc, inlineCss = false, cookies }: handlePageArgs) => {                                                                                                                                                                                           
+const handlePage = async ({ Page, getStaticProps, path, params, reloadScriptSrc, inlineCss = false, cookies }: handlePageArgs) => {
   memoryStorage.removeItem('styleSheet')
   memoryStorage.removeItem('headNodes')
   memoryStorage.removeItem('hydrationScripts')
