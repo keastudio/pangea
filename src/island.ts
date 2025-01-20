@@ -18,7 +18,7 @@ function Island ({ path, app, data }: { path: string, app: (React.FunctionCompon
   const islandFilename = path.split('/').slice(-1)[0].split('.')[0] + '_' + createHash('md5').update(JSON.stringify(data)) + '.js'
   const hydrateIslandFilename = 'hydrate-' + islandFilename
 
-  if ('Deno' in globalThis) {
+  if ('devServerHandler' in globalThis) {
     const scriptBody = `
       import { React, ReactDOMClient, ${existsSync('./src/store.ts') ? 'globalStore' : ''} } from './shared.js'
       import App from './${path.split('/').slice(-1)[0].split('.')[0] + '.js'}'
