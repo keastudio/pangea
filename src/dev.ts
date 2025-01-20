@@ -16,10 +16,7 @@ type responseMapItem = [
 ]
 
 declare global {
-  let devServerHandler: (route: routeType, responseHandler: responseHandlerType) => void
-  interface Window {
-    devServerHandler: (route: routeType, responseHandler: responseHandlerType) => void 
-  }
+  function devServerHandler (route: routeType, responseHandler: responseHandlerType): void
 }
 
 export async function dev (baseModuleUrl: string) {
@@ -35,7 +32,7 @@ export async function dev (baseModuleUrl: string) {
   const reloadScriptSrc = '/reload.js'
   const reloadWebSocketUrl = '/alive'
 
-  window.devServerHandler = (route: routeType, responseHandler: responseHandlerType) => {
+  globalThis.devServerHandler = function (route: routeType, responseHandler: responseHandlerType): void {
     responseMap.push([route, responseHandler])
   }
 
@@ -45,12 +42,12 @@ export async function dev (baseModuleUrl: string) {
     for (const { name, isFile } of Deno.readDirSync(islandsDir)) {
       if (isFile === true) {
         const path = join(islandsDir, name)
-  
+
         responseMap.push([
           '/' + basename(path).split('.')[0] + '.js',
           async () => {
             const responseBody = await generateIslandFile(path)
-  
+
             return new Response(
               responseBody,
               {
@@ -64,12 +61,12 @@ export async function dev (baseModuleUrl: string) {
         ])
       }
     }
-  
+
     responseMap.push([
       '/shared.js',
       async () => {
         const responseBody = await generateSharedDependenciesFile({ projectDir })
-  
+
         return await Promise.resolve(
           new Response(
             responseBody,
@@ -89,15 +86,15 @@ export async function dev (baseModuleUrl: string) {
     for (const { name, isFile } of Deno.readDirSync(join(projectDir, 'pages', ...subPath))) {
       if (isFile) {
         const cssRouteRegex = RegExp(`^/${encodeURI([...subPath, name.split('.')[0]].join('/'))}\\.([a-z0-9]{6})\\.css$`)
-  
+
         let styleSheetHashCached: (string | null)
         let styleSheetBodyCached: (string | null)
-  
+
         responseMap.push([
           cssRouteRegex,
           async ({ requestPath }) => {
             const requestId = (requestPath?.match(cssRouteRegex) ?? [])[1]
-  
+
             if (requestId === styleSheetHashCached) {
               return await Promise.resolve(
                 new Response(
@@ -122,9 +119,9 @@ export async function dev (baseModuleUrl: string) {
             }
           }
         ])
-  
+
         const dynamicParameterRegex = /\[([a-z]+)\]/g
-  
+
         if (dynamicParameterRegex.test(name)) {
           const { default: Page, getStaticProps, getStaticPaths } = await import('file://' + join(projectDir, 'pages', ...subPath, name))
 
@@ -132,14 +129,14 @@ export async function dev (baseModuleUrl: string) {
           if (name !== 'index' && paths) {
             for (const { params } of paths) {
               const path = '/' + [...subPath, name.split('.')[0]].join('/')
-  
+
               const substitutedPath = path.replace(
                 /\/\[([a-z]+)\]/g,
                 (_match, capturedGroup1) => params[capturedGroup1] === ''
                   ? '/'
                   : '/' + params[capturedGroup1].replaceAll('/', '')
               )
-  
+
               responseMap.push([
                 substitutedPath,
                 async () => {
@@ -150,10 +147,10 @@ export async function dev (baseModuleUrl: string) {
                     params,
                     reloadScriptSrc
                   })
-  
+
                   styleSheetHashCached = styleSheetHash
                   styleSheetBodyCached = styleSheetBody
-  
+
                   return new Response(
                     pageBody,
                     {
@@ -169,7 +166,7 @@ export async function dev (baseModuleUrl: string) {
           }
         } else {
           const path = '/' + [...subPath, ...name.split('.')[0] === 'index' ? [] : [name.split('.')[0]]].join('/')
-  
+
           const { default: Page, getStaticProps } = await import('file://' + join(projectDir, 'pages', ...subPath, name))
 
           responseMap.push([
@@ -181,10 +178,10 @@ export async function dev (baseModuleUrl: string) {
                 path: [...subPath, name].join('/'),
                 reloadScriptSrc
               })
-  
+
               styleSheetHashCached = styleSheetHash
               styleSheetBodyCached = styleSheetBody
-  
+
               return new Response(
                 pageBody,
                 {
@@ -202,9 +199,9 @@ export async function dev (baseModuleUrl: string) {
       }
     }
   }
-  
+
   await servePages([])
-  
+
   responseMap.push([
     reloadWebSocketUrl,
     async ({ request }) => {
@@ -212,7 +209,7 @@ export async function dev (baseModuleUrl: string) {
       ws.onopen = () => {
         ws.send(buildId)
       }
-      
+
       return await Promise.resolve(response)
     }
   ])
@@ -224,10 +221,10 @@ export async function dev (baseModuleUrl: string) {
         new Response(
           `
             let reconnectionAttempts = 0
-          
+
             function startWebsocket () {
               const connection = new WebSocket('ws://' + window.location.host + '${reloadWebSocketUrl}')
-              
+
               connection.onmessage = event => {
                 if (event.data !== '${buildId}') {
                   connection.onclose = () => {}
@@ -255,7 +252,7 @@ export async function dev (baseModuleUrl: string) {
               'content-type': 'application/javascript; charset=UTF-8'
             }
           }
-  
+
         )
       )
     }
@@ -263,7 +260,7 @@ export async function dev (baseModuleUrl: string) {
 
   const handler = async (request: Request) => {
     const requestPrefix = new URL(request.url).origin
-  
+
     const requestPath = new URL(request.url).pathname
 
     const matchedRule = responseMap.find(
@@ -275,7 +272,7 @@ export async function dev (baseModuleUrl: string) {
     if (matchedRule && typeof matchedRule[0] === 'string' && requestPath !== matchedRule[0]) {
       return await Promise.resolve(Response.redirect(requestPrefix + matchedRule[0], 302))
     }
-  
+
     if (matchedRule) {
       const responseHandler = matchedRule[1]
       return await responseHandler({
@@ -284,11 +281,11 @@ export async function dev (baseModuleUrl: string) {
         request
       })
     }
-  
+
     const staticDir = join(baseDir, 'static')
 
     const mimeType = lookup(requestPath.split('.').slice(-1)[0])
-  
+
     if (mimeType !== undefined && existsSync(join(staticDir, requestPath))) {
       const file = await Deno.readFile(join(staticDir, requestPath))
       if (file) {
@@ -303,7 +300,7 @@ export async function dev (baseModuleUrl: string) {
         )
       }
     }
-  
+
     return new Response(
       'Page not found',
       {
@@ -311,7 +308,6 @@ export async function dev (baseModuleUrl: string) {
       }
     )
   }
-  
+
   await serveHttp(handler, { port: 3000 })
 }
-
